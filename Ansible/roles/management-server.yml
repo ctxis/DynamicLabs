@@ -1,0 +1,47 @@
+---
+- hosts: localhost
+  become: yes
+  tasks:
+    - name: Upgrade all apt packages
+      apt: upgrade=dist force_apt_get=yes
+    - name: Check if a reboot is needed for Debian and Ubuntu boxes
+      register: reboot_required_file
+      stat: path=/var/run/reboot-required get_md5=no
+    - apt:
+        pkg:
+        - nginx
+        - pass
+        - python-pip
+    - name: start nginx
+      service:
+        name: nginx
+        state: started
+    - name: copy nginx configuration
+      copy:
+        remote_src: yes
+        src: /home/ubuntu/static_site.cfg
+        dest: /etc/nginx/sites-available/static_site.cfg
+    - name: create symlink
+      file:
+        src: /etc/nginx/sites-available/static_site.cfg
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+    - name: pip install "pywinrm>=0.3.0"
+      pip:
+        name: pywinrm>=0.3.0
+    - name: copy terraform binary into path
+      copy:
+        remote_src: yes
+        src: /home/ubuntu/terraform
+        dest: /usr/bin
+        mode: a+x
+    - name: copy terraform.py dynamic inventry script
+      copy:
+        remote_src: yes
+        src: /home/ubuntu/terraform.py
+        dest: /etc/ansible/terraform.py
+        mode: a+x

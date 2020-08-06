@@ -1,0 +1,22 @@
+---
+- include_vars:
+    file: env.yml
+- name: Configure Secret on SMB Share Vulnerability
+  win_file:
+    path: C:\Network-Administration
+    state: directory
+- name: Create Secrets File
+  win_lineinfile:
+    state: present
+    path: C:\Network-Administration\password-reset-20200104.txt
+    create: yes
+    encoding: utf-8
+    line: Hi "{{ victim_user }}". Your temporary password is "{{ lookup('password', 'credentials/user/' + victim_user) }}"
+- name: Share Folder
+  win_share:
+    name: Network-Administration
+    description: Secret share
+    path: C:\Network-Administration
+    list: yes
+    full: Administrators
+    read: Users

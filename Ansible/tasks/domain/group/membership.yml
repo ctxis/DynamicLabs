@@ -1,0 +1,9 @@
+---
+# membership.yml
+- win_domain_group_membership:
+    domain_server: "{{ ansible_domain }}"
+    domain_username: "{{ ansible_user }}"
+    domain_password: "{{ ansible_password }}"
+    name: "{{ item.name }}"
+    members: "{{ item.value }}"
+    state: present

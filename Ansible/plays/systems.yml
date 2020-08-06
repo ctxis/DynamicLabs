@@ -1,0 +1,8 @@
+- hosts: Win_Group_Membership
+  tasks:
+  - include_tasks: ../tasks/system/windows/group/membership.yml
+    loop: "{{ attributes_dict.Win_Group_Membership }}"
+- hosts: flag
+  tasks:
+  - include_tasks: ../tasks/system/windows/filesystem/add_flag.yml
+    loop: "{{ attributes_dict.flag }}"

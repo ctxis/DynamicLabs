@@ -1,0 +1,7 @@
+---
+# right.yml
+- win_user_right:
+    name: "{{ item.name }}"
+    users:
+    - "{{ item.value }}"
+    action: add

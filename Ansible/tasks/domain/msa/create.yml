@@ -1,0 +1,11 @@
+---
+# create.yml
+- win_shell: |
+    $password = ConvertTo-SecureString "{{ansible_password}}" -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential("{{ansible_user}}", $password)
+    try {
+        New-ADServiceAccount -Credential $cred -Name "{{ item.value }}" -DNSHostName "{{ item.value + '.' + ansible_domain }}" -Enabled $True
+    }
+    catch [Microsoft.ActiveDirectory.Management.ADIdentityAlreadyExistsException]{
+        Write-Output "Object already exists."
+    }

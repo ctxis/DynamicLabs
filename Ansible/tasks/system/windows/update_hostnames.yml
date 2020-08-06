@@ -1,0 +1,11 @@
+---
+# update_hostnames.yml
+- name: Changing system hostname.
+  hostname:
+    name: "{{ custom_hostname }}"
+  when: ansible_os_family != "Windows"
+- name: Testing connectivity to Windows systems.
+  win_ping:
+  retries: 60
+  delay: 5
+  when: ansible_os_family == "Windows"

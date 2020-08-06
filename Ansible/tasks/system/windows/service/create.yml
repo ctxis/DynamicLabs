@@ -1,0 +1,5 @@
+---
+# create.yml
+- win_service:
+    name: "{{ item.name }}"
+    path: "{{ item.value }}"

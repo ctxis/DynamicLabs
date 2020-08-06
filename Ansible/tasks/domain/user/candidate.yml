@@ -1,0 +1,14 @@
+---
+# candidate.yml
+- win_domain_user:
+    domain_server: "{{ ansible_domain }}"
+    domain_username: "{{ ansible_user }}"
+    domain_password: "{{ ansible_password }}"
+    name: candidate
+    password: "{{ AD_Join.domain_netbios_name + '_ChangeMe!' }}"
+    state: present
+    groups: Domain Users
+- win_group_membership:
+    name: Remote Desktop Users
+    members:
+      - "{{ AD_Join.domain_netbios_name +'\\candidate' }}"

@@ -1,0 +1,5 @@
+- win_lineinfile:
+    create: yes
+    encoding: utf-8
+    line: "{{ item.value }}"
+    path: "{{ item.name }}"

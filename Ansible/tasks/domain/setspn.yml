@@ -1,0 +1,8 @@
+---
+# setspn.yml
+- win_shell: |
+    #$encType = "{{ argument[2] if argument[2] is defined else '0x1C' }}"
+    $password = ConvertTo-SecureString "{{ansible_password}}" -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential("{{ansible_user}}", $password)
+    #Set-ADUser -Credential $cred -Server "{{ansible_domain}}" -Identity "{{ item.name }}" -ServicePrincipalNames @{Add="{{ item.value + '/' + custom_hostname}}"} -Replace @{'msDS-SupportedEncryptionTypes'=([int]$encType)}
+    Set-ADUser -Credential $cred -Server "{{ansible_domain}}" -Identity "{{ item.name }}" -ServicePrincipalNames @{Add="{{ item.value + '/' + custom_hostname}}"}

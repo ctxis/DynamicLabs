@@ -1,0 +1,41 @@
+- hosts: AD_Create
+  tasks:
+  - include_tasks: ../tasks/domain/create.yml
+- hosts: AD_SecEdit_Access
+  tasks:
+  - include_tasks: ../tasks/domain/secedit_access.yml
+    loop: "{{ attributes_dict.AD_SecEdit_Access }}"
+- hosts: AD_Join
+  tasks:
+  - include_tasks: ../tasks/domain/join.yml
+- hosts: candidate
+  tasks:
+  - include_tasks: ../tasks/domain/user/candidate.yml
+- hosts: AD_User
+  tasks:
+  - include_tasks: ../tasks/domain/user/create.yml
+    loop: "{{ attributes_dict.AD_User }}"
+- hosts: AD_MSA
+  tasks:
+  - include_tasks: ../tasks/domain/msa/create.yml
+    loop: "{{ attributes_dict.AD_MSA }}"
+- hosts: AD_User_Right
+  tasks:
+  - include_tasks: ../tasks/domain/user/right.yml
+    loop: "{{ attributes_dict.AD_User_Right }}"
+- hosts: AD_User_Password
+  tasks:
+  - include_tasks: ../tasks/domain/user/password.yml
+    loop: "{{ attributes_dict.AD_User_Password }}"
+- hosts: AD_Group_Membership
+  tasks:
+  - include_tasks: ../tasks/domain/group/membership.yml
+    loop: "{{ attributes_dict.AD_Group_Membership }}"
+- hosts: AD_SetSPN
+  tasks:
+  - include_tasks: ../tasks/domain/setspn.yml
+    loop: "{{ attributes_dict.AD_SetSPN }}"
+- hosts: AD_MSA_AllowRetrieve
+  tasks:
+  - include_tasks: ../tasks/domain/msa/PrincipalsAllowedToRetrieveManagedPassword.yml
+    loop: "{{ attributes_dict.AD_MSA_AllowRetrieve }}"

@@ -1,0 +1,10 @@
+######## / Ignore Terraform state
+**/.terraform
+**/*.tfstate
+**/*.tfstate.backup
+**/*.tfvars
+
+######## / Ignore SSH Keys
+**/*.pub
+**/*.pem
+**/SSH-Keys/

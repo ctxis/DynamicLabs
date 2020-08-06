@@ -1,0 +1,6 @@
+---
+# membership.yml
+- win_group_membership:
+    name: "{{ item.name }}"
+    members:
+      - "{{ item.value }}"

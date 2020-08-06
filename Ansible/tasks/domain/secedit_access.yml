@@ -1,0 +1,6 @@
+---
+# secedit_access.yml
+- win_security_policy:
+    section: System Access
+    key: "{{ item.name }}"
+    value: "{{ item.value }}"

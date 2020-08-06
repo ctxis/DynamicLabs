@@ -1,0 +1,5 @@
+---
+# disable.yml
+- win_user:
+    name: "{{ item.name }}"
+    account_disabled: yes

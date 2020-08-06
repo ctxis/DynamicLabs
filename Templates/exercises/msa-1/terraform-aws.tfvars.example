@@ -1,0 +1,102 @@
+############ / AWS Credentials
+AWS_ACCESS_KEY  = ""
+AWS_SECRET_KEY  = ""
+AWS_REGION      = "eu-west-2"
+
+############ / Attacker IP Range
+attacker_ip = ["1.2.3.4/25"] # ACL INACTIVE
+
+############ / SSH Key
+public_key_file_candidate    = "candidate_key.pub"
+public_key_file_management   = "management_key.pub"
+private_key_file_management  = "management_key.pem"
+
+############ / Networking
+availability_zone         = "eu-west-2a"
+address_space_vpc         = "10.1.0.0/16"
+address_space_management  = "10.1.254.0/24"  #TierM
+
+networks = [
+    {
+        network_id    = "999"
+        network_tier  = "TM"
+        network_name  = "LabManagement_Net"
+        address_space = "10.1.254.0/24"
+        public_ip     = true
+    },
+    {
+        network_id    = "001"
+        network_tier  = "T1"
+        network_name  = "T1_Net"
+        address_space = "10.1.1.0/24"
+        public_ip     = false
+    },
+    {
+        network_id    = "002"
+        network_tier  = "T2"
+        network_name  = "T2_Public"
+        address_space = "10.1.2.0/24"
+        public_ip     = true
+    }
+]
+
+############ / Server Instance Details
+managment_server_network_id = "999"
+management_server_private_ip = "10.1.254.10"
+
+systems = [
+    {
+        module      = "microsoft_windows_server_2016"
+        size        = "t2.medium"
+        network_id  = "000"
+        private_ip  = "10.1.1.10"
+        class       = "DC"
+        id          = "001"
+        features    = ["AD_Create", "AD_SecEdit_Access"]
+        attributes = [
+            {
+                name = "AD_Create"
+                value = [{name = "domain_netbios_name", value = "alfa"}]
+            },
+            {
+                name = "AD_SecEdit_Access"
+                value = [
+                    {name = "MinimumPasswordAge", value = "0"},
+                    {name = "MaximumPasswordAge", value = "9000"},
+                    {name = "MinimumPasswordLength", value = "0"},
+                    {name = "PasswordComplexity", value = "0"}
+                ]
+            }
+        ]
+    },
+    {
+        module      = "microsoft_windows_server_2016"
+        size        = "t2.small"
+        network_id  = "002"
+        private_ip  = null
+        class       = "WS"
+        id          = "001"
+        features    = ["candidate", "AD_Join", "AD_Group_Membership", "AD_MSA", "AD_MSA_AllowRetrieve"]
+        attributes = [
+            {
+                name = "AD_Join"
+                value = [
+                    {name = "domain_netbios_name", value = "alfa"},
+                    {name = "domain_dns_server", value = "10.1.1.10"}
+                ]
+            },
+            {
+                name = "AD_MSA"
+                value = [{name = "username", value = "svc-backupNTDS"}]
+            },
+            {
+                name = "AD_Group_Membership"
+                value = [{name = "Domain Admins", value = "svc-backupNTDS$"}]
+            },
+            {
+                name = "AD_MSA_AllowRetrieve"
+                value = [{name = "svc-backupNTDS", value = "candidate"}]
+            }
+        ]
+    }
+]

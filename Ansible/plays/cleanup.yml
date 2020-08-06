@@ -1,0 +1,21 @@
+- hosts: AD_Join
+  tasks:
+  - win_user:
+        name: Administrator
+        account_disabled: yes
+- hosts: AD_Create
+  tasks:
+  - win_domain_user:
+        domain_server: "{{ ansible_domain }}"
+        domain_username: "{{ ansible_user }}"
+        domain_password: "{{ ansible_password }}"
+        name: Administrator
+        password: "{{ lookup('password', ansible_domain + '/users/Administrator length=32') }}"
+        state: present
+  - set_fact:
+        ansible_winrm_transport: ntlm
+        ansible_domain: "{{ AD_Create.domain_netbios_name + '.lab' }}"
+        ansible_user: "{{ 'administrator@' + AD_Create.domain_netbios_name + '.lab'}}"
+        ansible_password: "{{ lookup('password', ansible_domain + '/users/Administrator') }}"
+  - debug:
+        msg: "The '{{ ansible_domain }}' \\ '{{ ansible_user }}' now has password '{{ ansible_password }}'. Further Ansible playbook re-runs will error!"

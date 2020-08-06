@@ -1,0 +1,4 @@
+# Hijack Execution Flow: Path Interception by Unquoted Path
+- hosts: ATTCK_T1574_9_1
+  tasks:
+  - include_tasks: ../tasks/attacks/T1574_9/1.yml
