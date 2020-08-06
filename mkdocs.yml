@@ -1,0 +1,4 @@
+site_name: DynamicLabs
+nav:
+    - Home: index.md
+theme: readthedocs
