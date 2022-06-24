@@ -1,0 +1,16 @@
+---
+# Installs a LIST of packages on debian-based systems
+#
+# package_list = comma separated list of packages to install
+# Example:
+#            {
+#                name = "Linux_Apt_Package_Install"
+#                value = [
+#                    { package_list = "nginx,mariadb-server" }
+#                    ]
+#            }
+
+- name: Install package
+  apt:
+    pkg: "{{ item.package_list.split(',') }}"
+    update_cache: yes

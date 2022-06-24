@@ -1,8 +1,110 @@
+- hosts: Linux_Apt_Package_Upgrade
+  tags: Linux_Apt_Package_Upgrade
+  strategy: free
+  tasks:
+  - include_tasks: ../tasks/system/linux/packages/apt_package_upgrade.yml
+- hosts: Linux_Apt_Package_Install
+  tags: Linux_Apt_Package_Install
+  tasks:
+  - include_tasks: ../tasks/system/linux/packages/apt_package_install.yml
+    loop: "{{ attributes_dict.Linux_Apt_Package_Install }}"
+- hosts: Win_Defender_Disable
+  tags: Win_Defender_Disable
+  tasks:
+  - include_tasks: ../tasks/system/windows/antivirus/disable_defender.yml
+- hosts: Win_User
+  tags: Win_User
+  tasks:
+  - include_tasks: ../tasks/system/windows/user/create.yml
+    loop: "{{ attributes_dict.Win_User }}"
+- hosts: Linux_User
+  tags: Linux_User
+  tasks:
+  - include_tasks: ../tasks/system/linux/user/create.yml
+    loop: "{{ attributes_dict.Linux_User }}"
+- hosts: Win_User_Password
+  tags: Win_User_Password
+  tasks:
+  - include_tasks: ../tasks/system/windows/user/password.yml
+    loop: "{{ attributes_dict.Win_User_Password }}"
+- hosts: Linux_Authorized_Keys
+  tags: Linux_Authorized_Keys
+  tasks:
+  - include_tasks: ../tasks/system/linux/ssh/authorized_keys.yml
+    loop: "{{ attributes_dict.Linux_Authorized_Keys }}"
 - hosts: Win_Group_Membership
+  tags: Win_Group_Membership
   tasks:
   - include_tasks: ../tasks/system/windows/group/membership.yml
     loop: "{{ attributes_dict.Win_Group_Membership }}"
 - hosts: flag
+  tags: flag
   tasks:
   - include_tasks: ../tasks/system/windows/filesystem/add_flag.yml
     loop: "{{ attributes_dict.flag }}"
+- hosts: Win_Directory
+  tags: Win_Directory
+  tasks:
+  - include_tasks: ../tasks/system/windows/filesystem/directory.yml
+    loop: "{{ attributes_dict.Win_Directory }}"
+- hosts: Linux_Directory
+  tags: Linux_Directory
+  tasks:
+  - include_tasks: ../tasks/system/linux/filesystem/directory.yml
+    loop: "{{ attributes_dict.Linux_Directory }}"
+- hosts: Win_Simple_File
+  tags: Win_Simple_File
+  tasks:
+  - include_tasks: ../tasks/system/windows/filesystem/simplefile.yml
+    loop: "{{ attributes_dict.Win_Simple_File }}"
+- hosts: Linux_Simple_File
+  tags: Linux_Simple_File
+  tasks:
+  - include_tasks: ../tasks/system/linux/filesystem/simplefile.yml
+    loop: "{{ attributes_dict.Linux_Simple_File }}"
+- hosts: Win_Dirtree_Copy
+  tags: Win_Dirtree_Copy
+  tasks:
+  - include_tasks: ../tasks/system/windows/filesystem/dirtree.yml
+    loop: "{{ attributes_dict.Win_Dirtree_Copy }}"
+- hosts: Linux_Dirtree_Copy
+  tags: Linux_Dirtree_Copy
+  tasks:
+  - include_tasks: ../tasks/system/linux/filesystem/dirtree.yml
+    loop: "{{ attributes_dict.Linux_Dirtree_Copy }}"
+- hosts: Win_Filesystem_ACL
+  tags: Win_Filesystem_ACL
+  tasks:
+  - include_tasks: ../tasks/system/windows/filesystem/acl.yml
+    loop: "{{ attributes_dict.Win_Filesystem_ACL }}"
+- hosts: Win_File_Share
+  tags: Win_File_Share
+  tasks:
+  - include_tasks: ../tasks/system/windows/smb/fileshare.yml
+    loop: "{{ attributes_dict.Win_File_Share }}"
+- hosts: IIS_Web_Application
+  tags: IIS_Web_Application
+  tasks:
+  - include_tasks: ../tasks/system/windows/IIS/iis_web_application.yml
+    loop: "{{ attributes_dict.IIS_Web_Application }}"
+- hosts: Linux_Nginx_Website
+  tags: Linux_Nginx_Website
+  tasks:
+  - include_tasks: ../tasks/system/linux/nginx/nginx_website.yml
+    loop: "{{ attributes_dict.Linux_Nginx_Website }}"
+- hosts: MSSQL_Server
+  tags: MSSQL_Server
+  tasks:
+  - include_tasks: ../tasks/system/windows/MSSQL/MSSQL_server.yml
+    loop: "{{ attributes_dict.MSSQL_Server }}"
+# Keep custom scripts execution at the end
+- hosts: Linux_Shell_Script
+  tags: Linux_Shell_Script
+  tasks:
+  - include_tasks: ../tasks/system/linux/scripts/shell_script.yml
+    loop: "{{ attributes_dict.Linux_Shell_Script }}"
+- hosts: Win_PowerShell_Script
+  tags: Win_PowerShell_Script
+  tasks:
+  - include_tasks: ../tasks/system/windows/scripts/powershell_script.yml
+    loop: "{{ attributes_dict.Win_PowerShell_Script }}"

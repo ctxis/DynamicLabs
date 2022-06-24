@@ -1,10 +1,16 @@
 ######## / Ignore Terraform state
 **/.terraform
 **/*.tfstate
+**/*.lock.info
+**/*.lock
 **/*.tfstate.backup
 **/*.tfvars
+**/*.hcl
 
 ######## / Ignore SSH Keys
 **/*.pub
 **/*.pem
-**/SSH-Keys/
+**/SSH-Keys/*
+
+######## Ignore dynamically-generated Ansible inventory
+**/*ansible-inventory.yml

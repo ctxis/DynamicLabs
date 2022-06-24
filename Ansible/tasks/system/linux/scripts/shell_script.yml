@@ -1,0 +1,35 @@
+# Execute an inline or an asset script on Linux
+# Allows implementing custom actions not yet supported by DynamicLabs.
+# Native functionality should be used when available!!!
+#
+# Parameters:
+# inline_script - The content of a shell script
+# script_path - The path to a shell script relative to the assets directory 
+#
+# NOTE: requires assets_path to be explicitly defined in terraform.tfvars, otherwise a AnsibleFileNotFound
+#       is raised.
+#
+# Example:
+#
+# [...]
+# assets_path = "Templates/demo/example/assets/"
+# [...]
+#            {
+#                name = "Linux_Shell_Script"
+#                value = [
+#                    { # Executes the inline commands
+#                        inline_script = "echo Hello >> /tmp/I_have_been_here"
+#                    },
+#                    { # Executes the script at Templates/demo/example/assets/configure_service.sh
+#                        script_path = "configure_service.sh"
+#                    },
+#                ]
+#            },
+
+- name: Execute inline shell script
+  shell: "{{ item.inline_script }}"
+  when: item.inline_script is defined
+
+- name: Execute asset shell script
+  shell: "{{ lookup('file','~/assets/' + item.script_path) }}"
+  when: item.script_path is defined

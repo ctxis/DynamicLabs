@@ -1,38 +1,57 @@
-# DynamicLabs
-v0.1 (alpha) (AWS Only Release)
+**WARNING: This project spins up intentionally vulnerable systems. Users spinning up their own labs using this code risk exposure at their own risk. After deployment, please test that the lab is not Internet-exposed.**
 
-WARNING: This project involves spinning up intentionally vulnerable systems. Users spinning up their own labs using this code risk exposure at their own risk.
+# DynamicLabs
+v0.99 (beta)
 
 ## Setup
 0. Download the project from https://github.com/ctxis/DynamicLabs.
-1. Download Terraform v0.12 (https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_windows_amd64.zip).
-2. Install Terraform into your system path or /bin appropriately.
-3. Also, copy the Terraform Linux x64 binary to "~/dynamic-labs/Terraform/AWS/Core/Canonical/Ubuntu/18.04_Management/files" or "~/dynamic-labs/Terraform/Azure/Core/Canonical/Ubuntu/18.04_Management/files/".
-4. Generate a pair of SSH keys and place them into "~/dynamic-labs/SSH-Keys/". Ensure that other users cannot read your SSH key.
-5. Download a 3rd party provider for dynamic Ansible inventory generation from https://github.com/nbering/terraform-provider-ansible/releases/tag/v1.0.3. Place the binary into "%APPDATA%\terraform.d\plugins" on Windows or "~/.terraform.d/plugins" on Linux. E.g. AppData\Roaming\terraform.d\plugins\windows_amd64\terraform-provider-ansible_v1.0.3.exe
+1. Download the latest version of Terraform. (Last tested on v0.15.4)
+   Windows: https://releases.hashicorp.com/terraform/0.15.4/terraform_0.15.4_windows_amd64.zip
+   Linux: https://releases.hashicorp.com/terraform/0.15.4/terraform_0.15.4_linux_amd64.zip
+2. (Optional) Install Terraform into your system path or /bin appropriately.
+3. Select what template you want to deploy (from the /Templates directory). Alfa is a basic template that conists of an AD setup with basic weaknesses like Kerberoasting and MSA abuse.
 
-## Deployment Instructions for AWS
-1. Ensure that your current directory is set to dynamic labs.
-2. Create a new terraform workspace.
-```terraform workspace new <name>```
-3. Initiate Terraform modules.
-```terraform init ./Terraform/AWS/```
-4. Copy "./Templates/<type>/<name>/terrfaorm-AWS.tfvars.example" to "./Templates/<type>/<name>/terrfaorm-AWS.tfvars"
-5. Edit the new file to add in your Azure connection details, your network range and SSH key names.
-6. Begin deployment.
-```terraform apply -auto-approve -var-file="./Templates/<type>/<name>/terraform-aws.tfvars" ./Terraform/AWS/```
-7. Send over the Terraform state file to your management server.
-```scp -r -i ./SSH-Keys/<mgmnt_key> ./terraform.tfstate.d/<workspace name>/terraform.tfstate ubuntu@<mgmnt_box_ip>:~/```
-8. SSH onto the management server and kick-off resource configuration.
-```
-ssh -i ./SSH-Keys/<mgmnt_key> ubuntu@<mgmnt_box_ip>
-#> ansible-playbook -i /etc/ansible/terraform.py ./Ansible/site.yml -vvvv
-```
 
-## Deployment Instructions for Azure
-Will be updated over the weekend.
+## AWS Deployment
+0. Ensure that your current directory is set to dynamic labs.
+1. Create a new terraform workspace. (Use a short workspace name like 'DL1' upto 6 characters).
+```terraform -chdir="./Terraform/AWS" workspace new <name>```
+2. Initiate Terraform modules.
+```terraform -chdir="./Terraform/AWS" init```
+3. Clone the desired template's example file. 
+```I.e. "./Templates/<type>/<name>/terraform-AWS.tfvars.example" to "./Templates/<type>/<name>/terraform-AWS.tfvars"```
+```E.g. "copy ./Templates/demos/simple-AD/terraform-AWS.tfvars.example" to "./Templates/demos/simple-AD/terraform-AWS.tfvars"```
+4. Edit the file to add in your AWS connection details and your source network range.
+5. Begin deployment.
+```I.e. terraform -chdir="./Terraform/AWS" apply -var-file="../../Templates/<type>/<name>/terraform-aws.tfvars"```
+```E.g. terraform -chdir="./Terraform/AWS" apply -var-file="../../Templates/demos/simple-AD/terraform-aws.tfvars"```
+6. Deployment should take 10-30 minutes to complete depending on the specific template chosen.
+7. Once it completes, you can either SSH to Kali for the perspective of an unauthenticated internal network-based attacker, or the candidate system for an authenticated attacker that has compromised a low-privilege user. The Kali system uses the "ec2-user" and the candidate private SSH key. The Windows candidate system's credentials will be shown in Terraform output.
 
-## Contributors
-- Alex Bourla
+## Azure Deployment
+0. Download and install Azure CLI (https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli).
+1. Type "az login" and authenticate into Azure.
+2. Ensure that your current directory is set to dynamic labs.
+3. Create a new terraform workspace. (Use a short workspace name like 'DL1' upto 6 characters).
+```terraform -chdir="./Terraform/Azure" workspace new <name>```
+4. Initiate Terraform modules.
+```terraform -chdir="./Terraform/Azure" init```
+5. Clone the desired template's example file. 
+```I.e. "./Templates/<type>/<name>/terraform-azure.tfvars.example" to "./Templates/<type>/<name>/terraform-azure.tfvars"```
+```E.g. "copy ./Templates/demos/simple-AD/terraform-azure.tfvars.example" to "./Templates/demos/simple-AD/terraform-azure.tfvars"```
+6. Edit the file to add in your source network range
+7. Begin deployment.
+```I.e. terraform -chdir="./Terraform/Azure" apply -var-file="../../Templates/<type>/<name>/terraform-azure.tfvars"```
+```E.g. terraform -chdir="./Terraform/Azure" apply -var-file="../../Templates/demos/simple-AD/terraform-azure.tfvars"```
+8. Deployment should take 20-40 minutes to complete depending on the specific template chosen.
+9. Once it completes, you can either SSH to Kali for the perspective of an unauthenticated internal network-based attacker, or the candidate system for an authenticated attacker that has compromised a low-privilege user. The Kali system uses the "ec2-user" and the candidate private SSH key. The Windows candidate system's credentials will be shown in Terraform output.
+
+## Current Contributors
 - Rohan Durve (@Decode141)
+- David Turco (@endle__)
+
+## Past Contributors
+- Alex Bourla
 - Dominik Schelle
+
+**WARNING: This project spins up intentionally vulnerable systems. Users spinning up their own labs using this code risk exposure at their own risk. After deployment, please test that the lab is not Internet-exposed.**

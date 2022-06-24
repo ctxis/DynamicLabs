@@ -1,0 +1,35 @@
+# Creates a file with optional text content and sets the owner
+# Further permissions can be assigned with the feature Win_FileSystem_ACL
+#
+# path - path of directory to create
+# owner - the user owning the file (optional, default is SYSTEM)
+# content - content of the file as a string (optional, default is the empty file)
+# inherit_acl - enabled/disabled - whether to inherit ACLs from parent (optional, default is enabled)
+#
+# Example:
+#            {
+#                name = "Win_Simple_File"
+#                value = [
+#                    {path = "C:\\Directory1\\file1.txt"}, # Empty file owned by SYSTEM
+#                    {path = "C:\\Directory1\\file2.txt", content = "Hello World" },
+#                    { # File with content loaded from the templates directory
+#                       path = "C:\\Directory1\\file3.txt", 
+#                       content = <<EOT
+#                          Hello World!!!!
+#                       EOT
+#                    },
+#                    {path = "C:\\Directory1\Subdir1", owner = "DYNAMIC\\user1", inherit_acl="disabled"}
+#                    ]
+#            }
+
+- win_copy:
+    dest: "{{ item.path }}"
+    content: "{{ item.content | default() }}"
+
+- win_owner:
+    path: "{{ item.path }}"
+    user: "{{ item.owner | default('SYSTEM') }}"
+
+- win_acl_inheritance:
+    path: "{{ item.path }}"
+    state: "{{ 'absent' if (item.inherit_acl | default('enabled')) == 'disabled' else 'present' }}"

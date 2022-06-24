@@ -1,0 +1,167 @@
+########### / Location
+location = "uksouth"
+
+############ / Attacker IP Range
+candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
+candidate_network = 2
+
+############ / SSH Key
+public_key_file_candidate    = "candidate_key.pub"
+private_key_file_candidate   = "candidate_key.pem"
+
+############ / Networking
+networks = [
+    {
+        network_id    = "1"
+        network_name  = "INTERNAL"
+        address_space = ["10.1.1.0/24"]
+    },
+    # !!! Internet Facing !!!
+    {
+        network_id    = "2"
+        network_name  = "CANDIDATE_EXTERNAL"
+        address_space = ["10.1.2.0/24"]
+    }
+]
+
+############ / Security Rules
+security_rules = [
+    {
+        network_id                      = 1
+        name                            = "1"
+        priority                        = 1000
+        direction                       = "Inbound"
+        access                          = "Allow"
+        protocol                        = "*"
+        source_port_ranges              = ["0-65535"]
+        destination_port_ranges         = ["0-65535"]
+        source_address_prefixes         = ["10.1.0.0/16"]
+        destination_address_prefixes    = ["10.1.0.0/16"]
+    },
+    {
+        network_id                      = 1
+        name                            = "2"
+        priority                        = 1000
+        direction                       = "Outbound"
+        access                          = "Allow"
+        protocol                        = "*"
+        source_port_ranges              = ["0-65535"]
+        destination_port_ranges         = ["0-65535"]
+        source_address_prefixes         = ["10.1.0.0/16"]
+        destination_address_prefixes    = ["0.0.0.0/0"]
+    },
+    {
+        network_id                      = 2
+        name                            = "3"
+        priority                        = 1000
+        direction                       = "Inbound"
+        access                          = "Allow"
+        protocol                        = "*"
+        source_port_ranges              = ["0-65535"]
+        destination_port_ranges         = ["0-65535"]
+        source_address_prefixes         = ["10.1.0.0/16"]
+        destination_address_prefixes    = ["10.1.0.0/16"]
+    },
+    {
+        network_id                      = 2
+        name                            = "4"
+        priority                        = 1000
+        direction                       = "Outbound"
+        access                          = "Allow"
+        protocol                        = "*"
+        source_port_ranges              = ["0-65535"]
+        destination_port_ranges         = ["0-65535"]
+        source_address_prefixes         = ["10.1.0.0/16"]
+        destination_address_prefixes    = ["0.0.0.0/0"]
+    }
+]
+
+
+############ / Systems
+systems = [
+    {
+        module      = "microsoft_windows_server_2016"
+        size        = "Standard_B2s"
+        network_id  = "1"
+        hostname    = null
+        private_ip  = "10.1.1.10"
+        public_ip   = false
+        class       = "DC"
+        id          = "01"
+        features    = [
+            {
+                name = "AD_Forest"
+                value = [
+                    {name = "domain_name", value = "dynamic.lab"},
+                    {name = "domain_netbios_name", value = "dynamic"}
+                ]
+            },
+            {
+                name = "AD_SecEdit_Access"
+                value = [
+                    {name = "MinimumPasswordAge", value = "0"},
+                    {name = "MaximumPasswordAge", value = "9000"},
+                    {name = "MinimumPasswordLength", value = "0"},
+                    {name = "PasswordComplexity", value = "0"}
+                ]
+            }
+        ]
+    },
+    {
+        module      = "microsoft_windows_server_2016"
+        size        = "Standard_B2s"
+        network_id  = "1"
+        hostname    = null
+        private_ip  = "10.1.1.11"
+        public_ip   = false
+        class       = "DC"
+        id          = "02"
+        features    = [
+            {
+                name = "AD_Domain"
+                value = [
+                    {name = "domain_parent_name", value = "dynamic.lab"},
+                    {name = "domain_dns_server", value = "10.1.1.10"},
+                    {name = "domain_name", value = "alfa"},
+                    {name = "domain_type", value = "ChildDomain"}
+                ]
+            },
+            {
+                name = "AD_SecEdit_Access"
+                value = [
+                    {name = "MinimumPasswordAge", value = "0"},
+                    {name = "MaximumPasswordAge", value = "9000"},
+                    {name = "MinimumPasswordLength", value = "0"},
+                    {name = "PasswordComplexity", value = "0"}
+                ]
+            }
+        ]
+    },
+    {
+        module      = "microsoft_windows_server_2016"
+        size        = "Standard_B1ms"
+        network_id  = "2"
+        hostname    = null
+        private_ip  = null
+        public_ip   = true
+        class       = "GS"
+        id          = "01"
+        features    = [
+            {
+                name = "AD_Join"
+                value = [
+                    {name = "domain_name", value = "alfa.dynamic.lab"},
+                    {name = "domain_dns_server", value = "10.1.1.11"},
+                ]
+            },
+            {
+                name = "AD_User"
+                value = [{name = "LowPriv", password = "Sup3rSecretString.2021!"}]
+            },
+            {
+                name = "Win_Group_Membership"
+                value = [{name = "Remote Desktop Users", value = "LowPriv"}]
+            }
+        ]
+    }
+]

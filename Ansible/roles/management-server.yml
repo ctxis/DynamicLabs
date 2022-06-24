@@ -11,7 +11,7 @@
         pkg:
         - nginx
         - pass
-        - python-pip
+        - python3-pip
     - name: start nginx
       service:
         name: nginx
@@ -30,18 +30,6 @@
       service:
         name: nginx
         state: restarted
-    - name: pip install "pywinrm>=0.3.0"
+    - name: pip3 install "pywinrm>=0.3.0"
       pip:
         name: pywinrm>=0.3.0
-    - name: copy terraform binary into path
-      copy:
-        remote_src: yes
-        src: /home/ubuntu/terraform
-        dest: /usr/bin
-        mode: a+x
-    - name: copy terraform.py dynamic inventry script
-      copy:
-        remote_src: yes
-        src: /home/ubuntu/terraform.py
-        dest: /etc/ansible/terraform.py
-        mode: a+x

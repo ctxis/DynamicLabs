@@ -11,7 +11,7 @@
     path: C:\Network-Administration\password-reset-20200104.txt
     create: yes
     encoding: utf-8
-    line: Hi "{{ victim_user }}". Your temporary password is "{{ lookup('password', 'credentials/user/' + victim_user) }}"
+    line: Hi "{{ victim_user }}". Your temporary password is "{{ lookup('password', '~/credentials/user/' + victim_user) }}"
 - name: Share Folder
   win_share:
     name: Network-Administration

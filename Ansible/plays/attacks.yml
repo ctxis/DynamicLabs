@@ -1,4 +1,25 @@
 # Hijack Execution Flow: Path Interception by Unquoted Path
 - hosts: ATTCK_T1574_9_1
+  tags: ATTCK_T1574_9_1
   tasks:
   - include_tasks: ../tasks/attacks/T1574_9/1.yml
+
+# Unsecured Credentials: Credentials in Registry
+- hosts: ATTCK_T1552_2_1
+  tags: ATTCK_T1552_2_1
+  tasks:
+  - include_tasks: ../tasks/attacks/T1552_2/1.yml
+
+# OS Credential Dumping: LSASS Memory 
+- hosts: ATTCK_T1003_1
+  tags: ATTCK_T1003_1
+  tasks:
+  - include_tasks: ../tasks/attacks/T1003_1/logonpasswords.yml
+    loop: "{{ attributes_dict.ATTCK_T1003_1 }}"
+
+# Forced Authentication: NTLMv2 Response Give-away via SMB
+- hosts: ATTCK_T1187_1
+  tags: ATTCK_T1187_1
+  tasks:
+  - include_tasks: ../tasks/attacks/T1187_1/T1187_SCF_1.yml
+    loop: "{{ attributes_dict.ATTCK_T1187_1 }}"

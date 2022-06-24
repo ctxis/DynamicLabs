@@ -1,0 +1,45 @@
+# Configures an SMB file share.
+# Commonly you would use this in conjuction with the Win_Directory feature to 
+# create a directory structure and assign suitable permissions. 
+# 
+# Share permissions are controlled by:
+# read_user_list - defaults to empty
+# read_write_user_list - defaults to empty
+# full_access_user_list - defaults to empty
+#
+# Note that filesystems permissions will control access further.
+#
+# Usage Example:
+#
+#              name = "Win_File_Share"
+#                value = [
+#                    {
+#                        name = "home",
+#                        description = "Home Folders", 
+#                        localpath = "C:\\Users\\",
+#                        # Comma separated user lists
+#                        read_user_list = ""
+#                        read_write_user_list = "Users"
+#                        full_access_user_list = "Administrators"
+#                    },
+#                    {
+#                        name = "Software",
+#                        localpath = "C:\\Software\\",
+#                        # Comma separated user lists
+#                        read_user_list = "Everyone"
+#                    },
+#                    {
+#                        name = "hiddenshare$",
+#                        localpath = "C:\\Secrets\\",
+#                        # Comma separated user lists
+#                        read_user_list = "Everyone"
+#                    }
+#                ]
+
+- win_share:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default() }}"
+    path: "{{ item.localpath }}"
+    read: "{{ item.read_user_list  | default() }}"
+    change: "{{ item.read_write_user_list  | default() }}"
+    full: "{{ item.full_access_user_list  | default() }}"

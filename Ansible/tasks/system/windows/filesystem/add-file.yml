@@ -1,7 +1,0 @@
-  - name: Create Secrets File
-    win_lineinfile:
-       state: present
-       path: C:\Network-Administration\login.txt
-       create: yes
-       encoding: utf-8
-       line: The password for the network adminsitrator is "swordfish@123"

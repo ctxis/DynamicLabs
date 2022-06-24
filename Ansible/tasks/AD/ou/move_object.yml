@@ -1,0 +1,17 @@
+# Moves an object into a pre-existing Organizational Unit
+#
+# Parameters
+# objectname - (required) name of the AD object (e.g. user, computer)
+# path - (required) target OU path where to move the object (Can be created with AD_Organizational_Unit)
+#
+# Usage example:
+#            {
+#                name = "AD_Object_Organizational_Unit"
+#                value = [
+#                    { objectname = "user1", path="OU=Administrative Users, DC=dynamic, DC=lab" }
+#                    { objectname = "computer1", path="OU=Critical Computers, DC=dynamic, DC=lab" }
+#                ]
+#            },
+
+- win_shell: |
+    $objectdn = Get-ADObject -filter { name -eq "{{ item.objectname }}"} | Move-ADObject -TargetPath '{{ item.path }}'

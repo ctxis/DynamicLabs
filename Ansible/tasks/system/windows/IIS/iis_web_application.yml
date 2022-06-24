@@ -1,0 +1,140 @@
+# Deploys IIS and one or more web sites
+#  - Deploy the content of the website using Win_Dirtree_Copy or Win_Simple_File
+#  - Control website behviour via web.config
+#  - When creating multiple websites be mindful of port clashes, in particular with port 80 of the "Default Web Site"
+# 
+# Options:
+#
+# name = website name (not hostname! see below). Default is 'Default Web Site'
+# hostname = website hostname (default *)
+# ip = website IP (default *)
+# port = website port (default 80)
+# state = state of the web site (can be absent to remove a site)
+# apppool_name = (default DefaultAppPool). If different the apppool is created
+# apppool_identity_type = LocalService/LocalSystem/NetworkService/ApplicationPoolIdentity(Default)/SpecificUser
+# apppool_user = user when identity_type is SpecificUser
+# apppool_password = password when identity_type is SpecificUser
+# apppool_state = state of the apppool. (default is started)
+# web_root = Absolute path to the web root. (Default C:\inetpub\wwwroot)
+#
+# Example 1:
+#            { # Deploy web content with Win_Dirtree_Copy
+#                name = "Win_Dirtree_Copy"
+#                value = [
+#                    {
+#                        path = "C:\\inetpub\\wwwroot\\", 
+#                        asset = "mywebsite/"
+#                    }
+#                ]
+#            },
+#             {
+#                name = "IIS_Web_Application"
+#                value = [ 
+#                    { } # Empty deploys a standard IIS with all settings as default, i.e. "Default Web Site" and "DefaultAppPool"
+#                ]
+#            },
+#
+# Example 2:
+#            { # Deploy web content with Win_Dirtree_Copy
+#                name = "Win_Dirtree_Copy"
+#                value = [
+#                    {
+#                        path = "C:\\customroot\\", 
+#                        asset = "mywebsite/"
+#                    }
+#                ]
+#            },
+#             {
+#                name = "IIS_Web_Application"
+#                value = [ 
+#                    # Remove "Default Web Site" which listens on port 80 by default
+#                    { name = "Default Web Site", state = "absent" },
+#                    # Deploy new website "webapp" on port 81 with default webroot
+#                    { name = "webapp1", port="81" },
+#                    # Deploy new website "webapp2" on port 8080 on app pool "myapppool2" running as SYSTEM
+#                    { 
+#                        name = "webapp2",
+#                        apppool_name = "myapppool2",
+#                        apppool_identity_type = "LocalSystem",
+#                        port = "8080" },
+#                    # Deploy new website "webapp3" on port 8081 on app pool "myapppool3" running as
+#                    # domain user dynamic\svc_myapp and web root at C:\\customroot
+#                    {
+#                        name = "webapp3",
+#                        apppool_name = "myapppool2",
+#                        apppool_identity_type = "SpecificUser",
+#                        apppool_user = "dynamic\\svc_myapp",
+#                        apppool_password = "Password1!",
+#                        port = "8081",
+#                        web_root = "C:\\customroot" },
+#            },
+#
+# Troubleshooting:
+#  * The following Ansible error is likely due to the assigned port being already in use:
+#    "Cannot create a file when that file already exists. (Exception from HRESULT: 0x800700B7)"
+
+- name: Install IIS Web-Server with sub features and management tools
+  win_feature:
+    name: Web-Server
+    state: present
+    include_sub_features: yes
+    include_management_tools: yes
+  register: win_feature
+
+- name: Reboot if installing Web-Server feature requires it
+  win_reboot:
+  when: win_feature.reboot_required
+
+- name: Configure application pool
+  win_iis_webapppool:
+    name: "{{ item.apppool_name | default('DefaultAppPool') }}"
+    attributes:
+      processModel.identityType: "{{ item.apppool_identity_type | default('ApplicationPoolIdentity') }}"
+      # startMode: "AlwaysRunning"
+    state: "{{ item.apppool_state | default('started') }}"
+  when: "(item.apppool_identity_type | default('ApplicationPoolIdentity')) != 'SpecificUser'"
+
+- name: Configure custom application pool
+  win_iis_webapppool:
+    name: "{{ item.apppool_name | default('DefaultAppPool') }}"
+    attributes:
+      processModel.identityType: "SpecificUser"
+      processModel.userName: "{{ item.apppool_user }}"
+      processModel.password: "{{ item.apppool_password }}"
+      # startMode: "AlwaysRunning"
+    state: "{{ item.apppool_state | default('started') }}"
+  when: "(item.apppool_identity_type | default('ApplicationPoolIdentity')) == 'SpecificUser'"
+
+- name: Configure IIS Site
+  win_iis_website:
+    name: "{{ item.name | default('Default Web Site') }}"
+    state: started
+    port: "{{ item.port | default('80') }}"
+    ip: "{{ item.ip | default('*') }}"
+    hostname: "{{ item.hostname | default('*') }}"
+    state: "{{ item.state | default('started') }}"
+    application_pool: "{{ item.apppool_name | default('DefaultAppPool') }}"
+    # For some reason Ansible is not happy with this. According to the examples
+    # in the documentation it should, instead it returns the error:
+    # "specified folder must already exist: physical_path"
+    # physical_path: "{{ item.web_root | default('%SystemDrive%\\inetpub\\wwwroot') }}"
+    physical_path: "{{ item.web_root | default('C:\\inetpub\\wwwroot') }}"
+
+- name: Firewall rule to allow access to IIS port
+  win_firewall_rule:
+    name: "IIS port {{ item.port | default(80) }}"
+    localport: "{{ item.port | default(80) }}"
+    action: allow
+    direction: in
+    protocol: tcp
+    state: present
+    enabled: yes
+
+- name: Unlock some IIS features so that they can be specified in web.config
+  win_shell: |
+    C:\Windows\System32\inetsrv\appcmd.exe unlock config -section:system.webServer/security/authentication/basicAuthentication
+    C:\Windows\System32\inetsrv\appcmd.exe unlock config -section:system.webServer/security/authentication/windowsAuthentication
+    C:\Windows\System32\inetsrv\appcmd.exe unlock config -section:system.webServer/security/authentication/clientCertificateMappingAuthentication
+    C:\Windows\System32\inetsrv\appcmd.exe unlock config -section:system.webServer/security/authentication/digestAuthentication
+    C:\Windows\System32\inetsrv\appcmd.exe unlock config -section:system.webServer/security/authentication/anonymousAuthentication
+    C:\Windows\System32\inetsrv\appcmd.exe unlock config -section:system.webServer/security/authentication/iisClientCertificateMappingAuthentication

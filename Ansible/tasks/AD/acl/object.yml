@@ -1,0 +1,93 @@
+# ACE ACLs to AD Objects 
+# Each item represents an ACE for an AD object
+#
+# item.objectname - the target object expressed as its name (one of objectname or objectdn is required). 
+#                   Common objects such as users, computers, groups, can be specified by name. Others such as OUs require the objectdn.
+# item.objectdn - the target object expressed as its distinguished name (one of objectname or objectdn is required)
+# item.identity - the (user, group, computer that has control on an object)
+# item.type - Allow/Deny (defaults to Allow)
+# item.adright - Active Directory Right to set (defaults to GenericAll) 
+#                See list at https://docs.microsoft.com/en-us/dotnet/api/system.directoryservices.activedirectoryrights?view=net-5.0
+# item.extendedrights_guid - Extended rights GUID reference (used when adright=ExtendedRight) 
+#                            See list at https://docs.microsoft.com/en-us/previous-versions/tn-archive/ff405676(v=msdn.10)?redirectedfrom=MSDN
+# item.inheritance - None/All/Descendents/Children/SelfAndChildren (defaults to None) - See description at https://docs.microsoft.com/en-us/dotnet/api/system.directoryservices.activedirectorysecurityinheritance?view=net-5.0
+#
+# Check abuse information in Bloodhound's documentation:
+# https://bloodhound.readthedocs.io/en/latest/data-analysis/edges.html
+# 
+# Example:
+#            {
+#                name = "AD_Object_ACL"
+#                value = [
+#                    { # Grants GenericAll to user2 on user1
+#                        objectname = "user1",
+#                        identity = "user2",
+#                        adright = "GenericAll"
+#                    },
+#                    { # Grants GenericAll to user2 on user1 
+#                        objectname = "user1",
+#                        identity = "user2",
+#                    },
+#                    { # Grants GenericWrite to user4 on CN=user3,CN=Users,DC=dynamic,DC=lab
+#                        objectdn = "CN=user3,CN=Users,DC=dynamic,DC=lab",
+#                        identity = "user4",
+#                        adright = "GenericWrite"
+#                    },
+#                    { # Grants GenericDacl to user DYNAMIC\user5 on group group1
+#                        objectname = "group1",
+#                        identity = "DYNAMIC\\user5",
+#                        adright = "WriteDacl"
+#                    },
+#                    { # Grants GenericWrite to group group2 on group group1
+#                        objectname = "group1",
+#                        identity = "group2",
+#                        adright = "GenericWrite"
+#                    },
+#                    { # Grants GenericWrite to computer account host01$ on group group1
+#                        objectname = "group1",
+#                        identity = "host01$",
+#                        adright = "GenericWrite"
+#                    }, 
+#                    { # Grants password reset rights to user6 on user5
+#                        objectname = "user5",
+#                        identity = "user6",
+#                        adright = "ExtendedRight"
+#                        extendedrights_guid = "00299570-246d-11d0-a768-00aa006e0529" # Reset password Guid
+#                    }
+#                ]
+#            }
+
+- win_shell: |
+    import-module ActiveDirectory
+    
+    $objectdn = "{{item.objectdn | default()}}"
+    $objectname = "{{item.objectname | default()}}"
+    if (! $objectdn) { 
+        if (! $objectname) {
+            throw "One of objectdn or objectname are required"
+        } else {
+            $objectdn = Get-ADObject -filter { name -eq $objectname}
+        } 
+    }
+    $path = "AD:\$objectdn"
+    $acl = get-acl $path
+    
+    $identityname = "{{item.identity | default()}}"
+    if (! $identityname) {
+        throw "identity is required"
+    }
+    $identity = New-Object System.Security.Principal.NTAccount($identityname)
+    $identitySID = $identity.Translate([System.Security.Principal.SecurityIdentifier])
+    $adright = [System.DirectoryServices.ActiveDirectoryRights]::{{item.adright | default("GenericAll")}}
+    $type = [System.Security.AccessControl.AccessControlType]::{{item.type | default("Allow")}}
+    $inheritance = "{{item.inheritance | default("None")}}"
+    if ("{{item.adright | default("GenericAll")}}" -eq "ExtendedRight") {
+        $extendedrights_guid = "{{item.extendedrights_guid | default("00000000-0000-0000-0000-000000000000")}}"
+    } else {
+        $extendedrights_guid = "00000000-0000-0000-0000-000000000000"        
+    }
+    
+    $ace = New-Object System.DirectoryServices.ActiveDirectoryAccessRule($identitySID, $adright, $type, [GUID]$extendedrights_guid, $inheritance)
+    
+    $acl.AddAccessRule($ace)
+    Set-Acl -Path $path -AclObject $acl

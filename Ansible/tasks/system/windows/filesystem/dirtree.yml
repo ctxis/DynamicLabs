@@ -1,0 +1,40 @@
+# Copies a local directory tree and sets the owner
+# Further permissions can be assigned with the feature Win_FileSystem_ACL
+#
+# path - path of the destination (a slash at the end of the path matters!!!)
+# asset - the item (directory/file) to copy on the remote system (a slash at the end of the path matters!!!)
+# owner - the user owning the file (optional, default is SYSTEM)
+# inherit_acl - enabled/disabled - whether to inherit ACLs from parent (optional, default is enabled)
+#
+# NOTE: requires assets_path to be explicitly defined in terraform.tfvars, otherwise a AnsibleFileNotFound
+#       is raised.
+#
+# Example:
+#
+# [...]
+# assets_path = "Templates/demo/example/assets/"
+# [...]
+#            {
+#                name = "Win_Dirtree_Copy"
+#                value = [
+#                    {
+#                        path = "C:\\shared\\", 
+#                        # directory1 is located at Templates/demo/example/assets/directory1
+#                        assets = "directory1/" # Specifying a / at the end will copy just the contents and not the directory itself
+#                        owner = "SYSTEM" 
+#                    }
+#                ]
+#            },
+
+- win_copy:
+    dest: "{{ item.path }}"
+    src: "~/assets/{{ item.asset }}"
+
+- win_owner:
+    path: "{{ item.path }}"
+    recurse: yes
+    user: "{{ item.owner | default('SYSTEM') }}"
+
+- win_acl_inheritance:
+    path: "{{ item.path }}"
+    state: "{{ 'absent' if (item.inherit_acl | default('enabled')) == 'disabled' else 'present' }}"

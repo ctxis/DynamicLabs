@@ -1,0 +1,62 @@
+# Copies a local directory tree and sets the owner
+#
+# Parameters:
+# path - path of the destination (a slash at the end of the path matters!!!)
+# asset - the item (directory/file) to copy on the remote system (a slash at the end of the path matters!!!)
+# owner - (optional) the user owning the files/directories (optional, default is SYSTEM)
+# group - (optional) the group owning the files/directories (optional, default is SYSTEM)
+# mode - (optional) the unix permissions on the files in chmod sytle
+# directory_mode - (optional) the unix permissions on the directories in chmod sytle
+
+#
+# NOTE: requires assets_path to be explicitly defined in terraform.tfvars, otherwise a AnsibleFileNotFound
+#       is raised.
+#
+# Example:
+#
+# [...]
+# assets_path = "Templates/demo/example/assets/"
+# [...]
+#            {
+#                name = "Linux_Dirtree_Copy"
+#                value = [
+#                    {
+#                        path = "/tmp/dir/", 
+#                        # directory1 is located at Templates/demo/example/assets/directory1
+#                        asset = "directory1/" # Specifying a / at the end will copy just the contents and not the directory itself
+#                        owner = "user1" 
+#                    }
+#                ]
+#            },
+
+- copy:
+    dest: "{{ item.path }}"
+    src: "~/assets/{{ item.asset }}"
+    owner: "{{ item.owner | default('root') }}" 
+    group: "{{ item.group | default('root') }}" 
+  when: item.mode is not defined and item.directory_mode is not defined
+
+- copy:
+    dest: "{{ item.path }}"
+    src: "~/assets/{{ item.asset }}"
+    owner: "{{ item.owner | default('root') }}" 
+    group: "{{ item.group | default('root') }}" 
+    mode: "{{ item.mode }}"
+  when: item.mode is defined and item.directory_mode is not defined
+
+- copy:
+    dest: "{{ item.path }}"
+    src: "~/assets/{{ item.asset }}"
+    owner: "{{ item.owner | default('root') }}" 
+    group: "{{ item.group | default('root') }}" 
+    directory_mode: "{{ item.directory_mode }}"
+  when: item.mode is not defined and item.directory_mode is defined
+
+- copy:
+    dest: "{{ item.path }}"
+    src: "~/assets/{{ item.asset }}"
+    owner: "{{ item.owner | default('root') }}" 
+    group: "{{ item.group | default('root') }}" 
+    mode: "{{ item.mode }}"
+    directory_mode: "{{ item.directory_mode }}"
+  when: item.mode is defined and item.directory_mode is defined

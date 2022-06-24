@@ -1,62 +1,116 @@
 ############ / AWS Credentials
-AWS_ACCESS_KEY  = ""
-AWS_SECRET_KEY  = ""
-AWS_REGION      = "eu-west-2"
+AWS_ACCESS_KEY          = ""
+AWS_SECRET_KEY          = ""
+AWS_REGION              = "eu-west-2"
 
 ############ / Attacker IP Range
-attacker_ip = ["1.2.3.4/25"] # ACL INACTIVE
+# Permitted to SSH and RDP to management network (ID 0) and candidate network (ID 1).
+candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
+candidate_network = 2
 
 ############ / SSH Key
 public_key_file_candidate    = "candidate_key.pub"
-public_key_file_management   = "management_key.pub"
-private_key_file_management  = "management_key.pem"
-
-############ / Networking
-availability_zone         = "eu-west-2a"
-address_space_vpc         = "10.1.0.0/16"
-address_space_management  = "10.1.254.0/24"  #TierM
+private_key_file_candidate   = "candidate_key.pem"
 
 networks = [
     {
-        network_id    = "999"
-        network_tier  = "TM"
-        network_name  = "LabManagement_Net"
-        address_space = "10.1.254.0/24"
-        public_ip     = true
-    },
-    {
-        network_id    = "001"
-        network_tier  = "T1"
-        network_name  = "T1_Net"
+        network_id    = "1"
+        network_name  = "INTERNAL"
         address_space = "10.1.1.0/24"
-        public_ip     = false
     },
+    # !!! Internet Facing !!!
     {
-        network_id    = "002"
-        network_tier  = "T2"
-        network_name  = "T2_Public"
+        network_id    = "2"
+        network_name  = "CANDIDATE_EXTERNAL"
         address_space = "10.1.2.0/24"
-        public_ip     = true
     }
 ]
 
-############ / Server Instance Details
-managment_server_network_id = "999"
-management_server_private_ip = "10.1.254.10"
+security_rules = [
+    {
+        network_id          = "1",
+        type                = "ingress",
+        cidr_blocks         = ["10.1.0.0/16"],
+        protocol            = "all",
+        from_port           = "0",
+        to_port             = "65535"
+    },
+    {
+        network_id          = "1",
+        type                = "ingress",
+        cidr_blocks         = ["10.1.0.0/16"],
+        protocol            = "icmp",
+        from_port           = "-1",
+        to_port             = "-1"
+    },
+    {
+        network_id          = "1",
+        type                = "egress",
+        cidr_blocks         = ["0.0.0.0/0"],
+        protocol            = "all",
+        from_port           = "0",
+        to_port             = "65535"
+    },
+    {
+        network_id          = "1",
+        type                = "egress",
+        cidr_blocks         = ["0.0.0.0/0"],
+        protocol            = "icmp",
+        from_port           = "-1",
+        to_port             = "-1"
+    },
+    {
+        network_id          = "2",
+        type                = "ingress",
+        cidr_blocks         = ["10.1.0.0/16"],
+        protocol            = "all",
+        from_port           = "0",
+        to_port             = "65535"
+    },
+    {
+        network_id          = "2",
+        type                = "ingress",
+        cidr_blocks         = ["10.1.0.0/16"],
+        protocol            = "icmp",
+        from_port           = "-1",
+        to_port             = "-1"
+    },
+    {
+        network_id          = "2",
+        type                = "egress",
+        cidr_blocks         = ["0.0.0.0/0"],
+        protocol            = "all",
+        from_port           = "0",
+        to_port             = "65535"
+    },
+    {
+        network_id          = "2",
+        type                = "egress",
+        cidr_blocks         = ["0.0.0.0/0"],
+        protocol            = "icmp",
+        from_port           = "-1",
+        to_port             = "-1"
+    }
+]
 
+############ / Systems
 systems = [
     {
         module      = "microsoft_windows_server_2016"
         size        = "t2.medium"
-        network_id  = "000"
+        network_id  = "1"
+        hostname    = null
         private_ip  = "10.1.1.10"
+        public_ip   = false
         class       = "DC"
-        id          = "001"
-        features    = ["AD_Create", "AD_SecEdit_Access"]
-        attributes = [
+        id          = "01"
+        features    = [
             {
-                name = "AD_Create"
-                value = [{name = "domain_netbios_name", value = "alfa"}]
+                name = "AD_Forest"
+                value = [
+                    {name = "domain_name", value = "dynamic.lab"},
+                    {name = "domain_netbios_name", value = "dynamic"}
+                ]
             },
             {
                 name = "AD_SecEdit_Access"
@@ -72,16 +126,17 @@ systems = [
     {
         module      = "microsoft_windows_server_2016"
         size        = "t2.small"
-        network_id  = "002"
+        network_id  = "2"
+        hostname    = null
         private_ip  = null
-        class       = "WS"
-        id          = "001"
-        features    = ["candidate", "AD_Join", "AD_Group_Membership", "AD_MSA", "AD_MSA_AllowRetrieve"]
-        attributes = [
+        public_ip   = true
+        class       = "GS"
+        id          = "01"
+        features    = [
             {
                 name = "AD_Join"
                 value = [
-                    {name = "domain_netbios_name", value = "alfa"},
+                    {name = "domain_name", value = "dynamic.lab"},
                     {name = "domain_dns_server", value = "10.1.1.10"}
                 ]
             },
@@ -95,7 +150,15 @@ systems = [
             },
             {
                 name = "AD_MSA_AllowRetrieve"
-                value = [{name = "svc-backupNTDS", value = "candidate"}]
+                value = [{name = "svc-backupNTDS", value = "LowPriv"}]
+            },
+            {
+                name = "AD_User"
+                value = [{name = "LowPriv", password = "Sup3rSecretString.2021!"}]
+            },
+            {
+                name = "Win_Group_Membership"
+                value = [{name = "Remote Desktop Users", value = "LowPriv"}]
             }
         ]
     }

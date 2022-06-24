@@ -1,0 +1,40 @@
+# Configures constrained delegation for an account
+#
+# name - account to configure with constrained delegation
+# account_type - user(user)|computer
+# account_spn - required when account_type is user, e.g. MSSQLSvc/somehostname
+# allowed_to_delegate_to - SPN the account is allowed to delegate to
+# 
+# Example:
+#  
+#            {
+#                name = "AD_Constrained_Delegation"
+#                value = [
+#                    # Configure user svc_iis with constrained delegation to MSSQLScv/db1.dynamic.lab:1433
+#                    { 
+#                       name = "svc_iis", 
+#                       account_spn = "HTTP/www.dynamic.lab",
+#                       allowed_to_delegate_to = "MSSQLSvc/db1.dynamic.lab:1433" 
+#                    },
+#                    # Configure computer server01 with constrained delegation to MSSQLScv/db1.dynamic.lab:1433
+#                    { 
+#                       name = "server01", 
+#                       type=computer, 
+#                       allowed_to_delegate_to = "MSSQLSvc/db1.dynamic.lab:1433" 
+#                    }
+#                ]
+#            },
+
+- name: Constrained delegation (User)
+  win_shell: |
+    Get-ADUser -Identity "{{ item.name }}" | Set-ADAccountControl -TrustedToAuthForDelegation $true
+    # SPN is required
+    Set-ADUser -Identity "{{ item.name }}" -ServicePrincipalNames @{Add='{{ item.account_spn }}'}
+    Set-ADUser -identity "{{ item.name }}" -Add @{'msDS-AllowedToDelegateTo'=@('{{ item.allowed_to_delegate_to }}')}
+  when: (account_type | default("user")) == "user"
+
+- name: Constrained delegation (Computer)
+  win_shell: |
+    Get-ADComputer -Identity "{{ item.name }}" | Set-ADAccountControl -TrustedToAuthForDelegation $true
+    Set-ADComputer -identity "{{ item.name }}" -Add @{'msDS-AllowedToDelegateTo'=@('{{ item.allowed_to_delegate_to }}')}
+  when: (account_type | default("user")) == "computer"

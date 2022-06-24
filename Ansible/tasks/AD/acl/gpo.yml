@@ -1,0 +1,27 @@
+---
+# Set permissions on a GPO
+#
+# gpo_name - Display name of the GPO (not the GUID). If multiple GPOs have the same name this feature will fail.
+# identity - object name to grant privileges to
+# identity_type - User (default), Group, Computer
+# permissions - GpoRead, GpoApply, GpoEdit (default), GpoEditDeleteModifySecurity, None
+#
+#
+#            {
+#                name = "AD_GPO_ACL"
+#                value = [
+#                    {
+#                        gpo_name = "Default Domain Policy", 
+#                        identity = "someuser",
+#                        identity_type = "User",
+#                        gpo_right = "GpoEdit"
+#                    }
+#                ]
+#            },
+
+- win_shell: |
+    $gpo_name = "{{ item.gpo_name }}"
+    $target_name = "{{ item.identity }}"
+    $target_type = "{{ item.identity_type | default('User') }}"
+    $permission = "{{ item.gpo_right | default('GpoEdit') }}"
+    Set-GPPermission -Name $gpo_name -TargetName $target_name -TargetType $target_type -PermissionLevel $permission

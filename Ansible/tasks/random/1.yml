@@ -1,0 +1,21 @@
+# task useful to replicate attacks scenarios where malicious PS script exists on the host
+
+- name: Transfer PS script to host
+  win_copy:
+    src: ./uploads/test.ps1
+    dest: C:\Windows\Temp\test.ps1
+    
+#- name: Write file to host
+#  win_copy:
+#    content: Write-Output "Hello"
+#    dest: C:\Windows\Temp\test.ps1  
+
+- name: Run the PS script
+  win_shell: C:\Windows\Temp\test.ps1
+  
+- name: Run a script without uploading first
+  win_shell: |
+    for ($i = 0; $i -lt 10; $i++)
+    {
+      Write-Host "Number $i"
+    }

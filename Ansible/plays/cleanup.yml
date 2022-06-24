@@ -1,21 +1,44 @@
 - hosts: AD_Join
   tasks:
   - win_user:
-        name: Administrator
+        name: "Administrator"
+        state: query
+    register: administrator_user_status
+  - win_user:
+        name: "Ansible"
+        state: query
+    register: ansible_user_status
+
+  - win_user:
+        name: "Administrator"
         account_disabled: yes
-- hosts: AD_Create
+    when: administrator_user_status.state == "present"
+  - win_user:
+        name: "Ansible"
+        account_disabled: yes
+    when: ansible_user_status.state == "present"
+
+- hosts: AD_CleanUp
   tasks:
   - win_domain_user:
         domain_server: "{{ ansible_domain }}"
         domain_username: "{{ ansible_user }}"
         domain_password: "{{ ansible_password }}"
-        name: Administrator
-        password: "{{ lookup('password', ansible_domain + '/users/Administrator length=32') }}"
+        name: "{{ ansible_user }}"
+        password: "{{ lookup('password', '~/credentials/domain/' + ansible_domain + '/' + ansible_user + ' length=32') }}"
         state: present
   - set_fact:
         ansible_winrm_transport: ntlm
-        ansible_domain: "{{ AD_Create.domain_netbios_name + '.lab' }}"
-        ansible_user: "{{ 'administrator@' + AD_Create.domain_netbios_name + '.lab'}}"
-        ansible_password: "{{ lookup('password', ansible_domain + '/users/Administrator') }}"
+        ansible_domain: "{{ ansible_domain }}"
+        ansible_user: "{{ ansible_user }}"
+        ansible_password: "{{ lookup('password', '~/credentials/domain/' + ansible_domain + '/' + ansible_user + ' length=32') }}"
   - debug:
         msg: "The '{{ ansible_domain }}' \\ '{{ ansible_user }}' now has password '{{ ansible_password }}'. Further Ansible playbook re-runs will error!"
+- hosts: Win_CleanUp
+  tasks:
+  - win_user:
+        name: "{{ ansible_user }}"
+        password: "{{ lookup('password', '~/credentials/local/' + custom_hostname + '/' + ansible_user + ' length=32') }}"
+        state: present
+  - debug:
+        msg: "The local '{{ ansible_user }}' now has password '{{ lookup('password', '~/credentials/local/' + custom_hostname + '/' + ansible_user) }}'. Further Ansible playbook re-runs will error!"

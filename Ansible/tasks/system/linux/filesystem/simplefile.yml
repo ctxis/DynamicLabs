@@ -1,0 +1,34 @@
+# Creates a file with optional text content and sets the owner
+#
+# path - path of directory to create
+# owner - the user owning the file (optional, default is root)
+# group - the group owning the file (optional, default is root)
+# mode - the unix permissions on the file in chmod sytle
+# content - content of the file as a string (optional, default is the empty file)
+#
+# Example:
+#            {
+#                name = "Linux_Simple_File"
+#                value = [
+#                    {path = "/tmp/file1.txt"}, # Empty file owned by root:root
+#                    {path = "/tmp/file2.txt", content = "Hello World", mode="600" },
+#                    { # File with inline content
+#                       path = "/tmp/file3.txt", 
+#                       content = <<EOT
+#                          Hello World!!!!
+#                       EOT
+#                    }
+#                    ]
+#            }
+
+- copy:
+    dest: "{{ item.path }}"
+    content: "{{ item.content | default() }}"
+    owner: "{{ item.owner | default('root') }}" 
+    group: "{{ item.group | default('root') }}" 
+
+- file:
+    path: "{{ item.path }}"
+    mode: "{{ item.mode }}"
+  when: item.mode is defined
+

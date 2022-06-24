@@ -1,0 +1,26 @@
+
+# NOTE: This requires AD_DNS_Forwarder_Zone to be configured so that the domains can resolve each other!!!!!
+
+# trusted_domain - fqdn of the trusted domain
+# trusting_domain - fqdn of the trusting domain
+# trust_type - twoway (default), oneway 
+
+# Examples:
+#              name = "AD_Trust"
+#              value = [
+#                  { trusted_domain = "dynamic.lab", trusting_domain = "anotherdomain.internal", trust_type = "twoway" }
+#              ]
+
+- name: Create twoway Trust
+  win_shell: |
+    if (-not (get-adtrust -filter "Target -eq '{{ item.trusted_domain }}'")) {
+      netdom trust {{ item.trusting_domain }} /d:{{ item.trusted_domain }} /add /twoway /Ud:{{ ansible_user }}@{{ item.trusted_domain }} /pd:{{ ansible_password }}
+    }
+  when: (item.trust_type | default("twoway")) == "twoway"
+
+- name: Create oneway Trust
+  win_shell: |
+    if (-not (get-adtrust -filter "Target -eq '{{ item.trusted_domain }}'")) {
+      netdom trust {{ item.trusting_domain }} /d:{{ item.trusted_domain }} /add
+    }
+  when: (item.trust_type | default("twoway")) == "oneway"

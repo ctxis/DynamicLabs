@@ -1,0 +1,28 @@
+# Creates a windows directory and sets the owner
+# Further permissions can be assigned with the feature Win_FileSystem_ACL
+#
+# path - path of directory to create
+# owner - optional, the user owning the file (default is SYSTEM)
+# inherit_acl - enabled/disabled - whether to inherit ACLs from parent (default is enabled)
+#
+# Example:
+#            {
+#                name = "Win_Directory"
+#                value = [
+#                    {path = "C:\\Directory1"},
+#                    {path = "C:\\Program Files\Mimikatz", owner = "SYSTEM"},
+#                    {path = "C:\\Directory1\Subdir1", owner = "DYNAMIC\\user1", inherit_acl="disabled"}
+#                    ]
+#            }
+
+- win_file:
+    path: "{{ item.path }}"
+    state: directory
+
+- win_owner:
+    path: "{{ item.path }}"
+    user: "{{ item.owner | default('SYSTEM') }}"
+
+- win_acl_inheritance:
+    path: "{{ item.path }}"
+    state: "{{ 'absent' if (item.inherit_acl | default('enabled')) == 'disabled' else 'present' }}"

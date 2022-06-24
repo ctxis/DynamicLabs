@@ -1,0 +1,23 @@
+# Creates a Forwarder DNS Zone.
+# This is required when setting up domain trust with AD_Trust
+# as each domain needs to know about the other domain
+#
+# Parameters:
+#   zone - the name of the new zone
+#   server - the IP address of the DNS server to forward the request to
+#
+# Example usage:
+#
+# {
+#     name = "AD_DNS_Forwarder_Zone"
+#     value = [
+#       { zone_name = "dynamic.lab", dns_server = "10.0.3.10" }
+#     ]
+#  }
+#
+#
+- community.windows.win_dns_zone:
+    name: "{{ item.zone_name }}"
+    type: forwarder
+    dns_servers:
+      - "{{ item.dns_server }}"

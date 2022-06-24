@@ -1,0 +1,28 @@
+# create.yml
+# Usage example:
+#            {
+#                name = "AD_Group"
+#                value = [
+#                    {name = "Group Name 1"},
+#                    {name = "Group Name 2", description="A group with description" },
+#                    {name = "Group Name 3", scope="domainlocal", description="A group scoped locally" }
+#                    ]
+#            },
+
+- win_domain_group:
+    domain_server: "{{ ansible_domain }}"
+    domain_username: "{{ ansible_user }}"
+    domain_password: "{{ ansible_password }}"
+    name: "{{ item.name }}"
+    scope: "{{ item.scope | default('global') }}"
+    description: "{{ item.description }}"
+    state: present
+  when: item.description is defined
+- win_domain_group:
+    domain_server: "{{ ansible_domain }}"
+    domain_username: "{{ ansible_user }}"
+    domain_password: "{{ ansible_password }}"
+    name: "{{ item.name }}"
+    scope: "{{ item.scope | default('global') }}"
+    state: present
+  when: item.description is not defined

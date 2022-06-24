@@ -1,0 +1,11 @@
+all:
+    hosts:
+        %{ for detail in system_details}${detail.private_ip}:
+            %{ for key,value in detail.ansible_data}${key}: ${value}
+            %{ endfor }
+        %{ endfor }
+%{ for group in features}${group}:
+    hosts:
+        %{ for detail in system_details}%{ for feature in detail.features }%{ if feature.name == group}${detail.private_ip}:
+        %{ endif }%{ endfor }%{ endfor }
+%{ endfor }

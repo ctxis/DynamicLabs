@@ -1,0 +1,170 @@
+---
+# Deploy an MSSQL DB instance and optionally creates a database
+
+# Parameters:
+# sysadmin - (optional) add the user as the instance sysadmin
+# db_name - (optional) name of the database to create 
+# db_owner - (optional, depends on db_name) add user as the owner of the database db_name
+# db_sql_script - (optional, depends on db_name) the script to run and delete/recreate the database schema. This script should handle delete and recreate.
+#                 for example:
+#                      drop table if exists users
+#                      create table users(name varchar(50))
+#                      insert into users values ('John Smith')
+
+# 
+# NOTE: db_sql_script requires assets_path to be explicitly defined in terraform.tfvars, otherwise a AnsibleFileNotFound
+#       is raised.
+
+# Example usage:
+#
+# [...]
+# assets_path = "Templates/demo/example/assets/"
+# [...]
+# 
+#             {
+#                name = "MSSQL_Server"
+#                value = [
+#                    { }, # Create an empty database
+#
+#                    { # Create a DB instance with DYNAMIC\john.smith as sysadmin of the instance
+#                        "sysadmin" = "DYNAMIC\\john.smith"
+#                    },
+#
+#                    { # Create a DB instance with DYNAMIC\john.smith as sysadmin of the instance
+#                      # Create a databas named MyCustomDB with owner DYNAMIC\laura.brawn and populate it 
+#                      # Using the script database/MyCustomDB.sql from the assets directory
+#                        "sysadmin" = "DYNAMIC\\john.smith",
+#                        "db_name" = "MyCustomDB",
+#                        "db_owner" = "DYNAMIC\\laura.brawn",
+#                        "db_sql_script" = "database/MyCustomDB.sql"
+#                    }]
+#            },
+#
+#
+# 
+
+- win_chocolatey:
+    name: sql-server-express
+    state: present
+  vars:
+    # Workaround for error "Exit code was '-2068774911'."
+    ansible_become: yes
+    ansible_become_method: runas
+    ansible_become_user: "{{ ansible_user }}"
+    ansible_become_password: "{{ ansible_password }}"
+    ansible_become_flags: logon_type=interactive logon_flags=with_profile    
+
+# Install SQL Server Management Studio
+- win_chocolatey:
+    name: ssms
+    state: present
+  vars:
+    # Workaround for error "Exit code was '-2068774911'."
+    ansible_become: yes
+    ansible_become_method: runas
+    ansible_become_user: "{{ ansible_user }}"
+    ansible_become_password: "{{ ansible_password }}"
+    ansible_become_flags: logon_type=interactive logon_flags=with_profile
+
+# Workaround for win_psmodule prompting for NuGet provider requirements
+- name: Install NuGet Provider 
+  win_shell: | 
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Install-PackageProvider -Name NuGet -Force
+
+- win_psmodule:
+    name: SqlServer
+    allow_clobber: true
+    state: present
+
+- name: Enable MSSQL TCP listener
+  win_shell: |
+    [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
+    $wmi = New-Object 'Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer' $env:COMPUTERNAME
+    $tcp = $wmi.ServerInstances['SQLEXPRESS'].ServerProtocols['Tcp']
+    $restart_service = $false
+
+    if (-Not $tcp.IsEnabled) {
+        $tcp.IsEnabled = $true  
+        $tcp.Alter()  
+        $restart_service = $true
+
+    }
+
+    # Set listening port to 1433. Default is dynamic
+    $port = {{ item.port | default("1433")}}
+    foreach ($ipAddress in $Tcp.IPAddresses)
+    {
+      if (($ipAddress.IPAddressProperties["TcpPort"].Value -ne $port) -or ($ipAddress.IPAddressProperties["TcpDynamicPorts"].Value -ne "")) {
+          $ipAddress.IPAddressProperties["TcpDynamicPorts"].Value = ""
+          $ipAddress.IPAddressProperties["TcpPort"].Value = "$port"
+          $Tcp.Alter()
+          $restart_service = $true
+        }
+    }
+
+    if ($restart_service) {
+      Restart-Service -Name 'MSSQL$SQLEXPRESS' -Force
+    }
+
+- name: Firewall rule to allow access to MSSQL port
+  win_firewall_rule:
+    name: MSSQL
+    localport: "{{ item.port | default(1433) }}"
+    action: allow
+    direction: in
+    protocol: tcp
+    state: present
+    enabled: yes
+
+- name: Create SysAdmin User
+  win_shell: | 
+    import-module sqlserver
+    $db_instance = $env:COMPUTERNAME
+    $db_user_exists = get-sqllogin -ServerInstance $db_instance | where {$_.Name -eq "{{ item.sysadmin }}"}
+    if (! $db_user_exists) {
+      add-sqllogin -ServerInstance $db_instance -LoginName "{{ item.sysadmin }}" -LoginType "WindowsUser" -DefaultDatabase "Master" -Enable  -GrantConnectSql
+      invoke-sqlcmd -serverinstance $db_instance "EXEC sp_addsrvrolemember '{{ item.sysadmin }}','sysadmin'; "
+    }
+  when: item.sysadmin is defined
+
+- name: Create Optional Database 
+  win_shell: |     
+    import-module sqlserver
+    $db_instance = ${env:COMPUTERNAME}
+    $dbname = "{{ item.db_name }}"
+    $db_name_exists = Get-SqlDatabase -ServerInstance $db_instance | where {$_.Name -eq $dbname}
+    if (! $db_name_exists) {
+      $db = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -Argumentlist $db_instance, $dbname 
+      $db.create()
+    }
+  when: item.db_name is defined
+
+- name: Create DB Owner
+  win_shell: | 
+    import-module sqlserver
+    $db_instance = ${env:COMPUTERNAME}
+    $db_owner_exists = get-sqllogin -ServerInstance $db_instance | where {$_.Name -eq "{{ item.db_owner }}"}
+    if (! $db_owner_exists ) {
+      add-sqllogin -ServerInstance $db_instance -LoginName "{{ item.db_owner }}" -LoginType "WindowsUser" -DefaultDatabase "Master" -Enable  -GrantConnectSql
+      invoke-sqlcmd -serverinstance $db_instance "use {{ item.db_name }}; EXEC sp_adduser '{{ item.db_owner }}', '{{ item.db_owner }}', 'db_owner';"
+    }
+  when: (item.db_name is defined) and (item.db_owner is defined)
+
+- name: Create TMP SQL file 
+  win_copy:
+    dest: "c:\\windows\\temp\\{{ item.db_name }}_init.sql"
+    src: "~/assets/{{ item.db_sql_script }}"
+  when: item.db_sql_script is defined
+
+- name: Run DB SQL Init Script
+  win_shell: | 
+      $db_instance = ${env:COMPUTERNAME}
+      invoke-sqlcmd -serverinstance $db_instance -database "{{ item.db_name }}" -InputFile "c:\windows\temp\{{ item.db_name }}_init.sql"
+  when: item.db_sql_script is defined
+
+- name: Delete TMP SQL file 
+  win_file:
+    path: "c:\\windows\\temp\\{{ item.db_name }}_init.sql"
+    state: absent
+  when: item.db_sql_script is defined

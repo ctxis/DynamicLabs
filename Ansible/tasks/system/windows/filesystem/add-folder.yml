@@ -1,7 +1,0 @@
-    - name: Configure Secret on SMB Share Vulnerability
-      block:
-        #create folder
-        - name: Create Folder
-          win_file:
-            path: C:\Network-Administration
-            state: directory

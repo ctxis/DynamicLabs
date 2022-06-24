@@ -1,0 +1,26 @@
+# Creates a directory and sets the owner and privileges
+#
+# path - path of directory to create
+# owner - optional, the user owning the directory (default is root)
+# group - the group owning the directory (optional, default is root)
+# mode - optional, the unix permissions on the directory in chmod sytle
+#
+# Example:
+#            {
+#                name = "Linux_Directory"
+#                value = [
+#                    {path = "/tmp/Directory1"},
+#                    {path = "/tmp/Directory2", owner = "user1", group = "group1", mode="770"},
+#                    ]
+#            }
+
+- file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default('root') }}" 
+    group: "{{ item.group | default('root') }}" 
+
+- file:
+    path: "{{ item.path }}"
+    mode: "{{ item.mode }}"
+  when: item.mode is defined

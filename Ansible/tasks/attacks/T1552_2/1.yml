@@ -1,0 +1,50 @@
+- set_fact:
+    ATTCK_T1552_2_1: "{{ ATTCK_T1552_2_1 | default({}) | combine({item.name: item.value}) }}"
+  with_items:
+    - "{{ attributes_dict.ATTCK_T1552_2_1 }}"
+
+# Credentials in Registry
+- name: Create logs directory
+  win_file:
+    path: C:\Windows\Temp\logs
+    state: directory
+
+- name: Get Putty installer
+  win_get_url:
+    url: https://the.earth.li/~sgtatham/putty/latest/w64/putty-64bit-0.74-installer.msi
+    dest: C:\Users\Administrator\Downloads\putty-64bit-0.74-installer.msi
+    http_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.74 Safari/537.36 Edg/79.0.309.43"
+
+- name: Install Putty
+  win_package: 
+    path: C:\Users\Administrator\Downloads\putty-64bit-0.74-installer.msi
+    state: present
+    log_path: C:\Windows\Temp\logs\putty_install.log
+
+- name: Copy over registry key
+  win_copy:
+    src: ./puttyregkey/putty_session.reg
+    dest: C:\Windows\Temp\putty_session.reg
+
+- name: Deploy Putty Session key
+  win_regmerge:
+    path: C:\Windows\Temp\putty_session.reg
+
+- name: Remove the registry key that copied earlier
+  win_file:
+    path: C:\Windows\Temp\putty_session.reg
+    state: absent
+
+- name: Set username for automatic logon
+  win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: DefaultUserName
+    data: "{{ ATTCK_T1552_2_1.username }}"
+    type: string
+
+- name: Set password for automatic logon
+  win_regedit:
+    path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: DefaultPassword
+    data: "{{ ATTCK_T1552_2_1.password }}"
+    type: string

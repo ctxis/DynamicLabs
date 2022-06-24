@@ -1,41 +1,121 @@
-- hosts: AD_Create
+- hosts: AD_Forest
+  tags: AD_Forest
   tasks:
-  - include_tasks: ../tasks/domain/create.yml
+  - include_tasks: ../tasks/AD/create.yml
+- hosts: AD_Domain
+  tags: AD_Domain
+  tasks:
+  - include_tasks: ../tasks/AD/domain/create.yml
 - hosts: AD_SecEdit_Access
+  tags: AD_SecEdit_Access
   tasks:
-  - include_tasks: ../tasks/domain/secedit_access.yml
+  - include_tasks: ../tasks/AD/secedit_access.yml
     loop: "{{ attributes_dict.AD_SecEdit_Access }}"
 - hosts: AD_Join
+  tags: AD_Join
   tasks:
-  - include_tasks: ../tasks/domain/join.yml
-- hosts: candidate
+  - include_tasks: ../tasks/AD/join.yml
+- hosts: AD_DNS_Forwarder_Zone
+  tags: AD_DNS_Forwarder_Zone
   tasks:
-  - include_tasks: ../tasks/domain/user/candidate.yml
+  - include_tasks: ../tasks/AD/dns/forwarder_zone.yml
+    loop: "{{ attributes_dict.AD_DNS_Forwarder_Zone }}"
+- hosts: AD_DNS_Record
+  tags: AD_DNS_Record
+  tasks:
+  - include_tasks: ../tasks/AD/dns/record.yml
+    loop: "{{ attributes_dict.AD_DNS_Record }}"
+- hosts: AD_Trust
+  tags: AD_Trust
+  tasks:
+  - include_tasks: ../tasks/AD/domain/trust.yml
+    loop: "{{ attributes_dict.AD_Trust }}"
+- hosts: AD_Organizational_Unit
+  tags: AD_Organizational_Unit
+  tasks:
+  - include_tasks: ../tasks/AD/ou/create.yml
+    loop: "{{ attributes_dict.AD_Organizational_Unit }}"
 - hosts: AD_User
+  tags: AD_User
   tasks:
-  - include_tasks: ../tasks/domain/user/create.yml
+  - include_tasks: ../tasks/AD/user/create.yml
     loop: "{{ attributes_dict.AD_User }}"
 - hosts: AD_MSA
+  tags: AD_MSA
   tasks:
-  - include_tasks: ../tasks/domain/msa/create.yml
+  - include_tasks: ../tasks/AD/msa/create.yml
     loop: "{{ attributes_dict.AD_MSA }}"
-- hosts: AD_User_Right
+##################################################
+# Early script execution. Use this in the few cases
+# where other features depend on custom actions.
+- hosts: Linux_EARLY_Shell_Script
+  tags: Linux_EARLY_Shell_Script
   tasks:
-  - include_tasks: ../tasks/domain/user/right.yml
+  - include_tasks: ../tasks/system/linux/scripts/shell_script.yml
+    loop: "{{ attributes_dict.Linux_EARLY_Shell_Script }}"
+- hosts: Win_EARLY_PowerShell_Script
+  tags: Win_EARLY_PowerShell_Script
+  tasks:
+  - include_tasks: ../tasks/system/windows/scripts/powershell_script.yml
+    loop: "{{ attributes_dict.Win_EARLY_PowerShell_Script }}"
+##################################################
+- hosts: AD_User_Right
+  tags: AD_User_Right
+  tasks:
+  - include_tasks: ../tasks/AD/user/right.yml
     loop: "{{ attributes_dict.AD_User_Right }}"
 - hosts: AD_User_Password
+  tags: AD_User_Password
   tasks:
-  - include_tasks: ../tasks/domain/user/password.yml
+  - include_tasks: ../tasks/AD/user/password.yml
     loop: "{{ attributes_dict.AD_User_Password }}"
-- hosts: AD_Group_Membership
+- hosts: AD_Group
+  tags: AD_Group
   tasks:
-  - include_tasks: ../tasks/domain/group/membership.yml
+  - include_tasks: ../tasks/AD/group/create.yml
+    loop: "{{ attributes_dict.AD_Group }}"
+- hosts: AD_Group_Membership
+  tags: AD_Group_Membership
+  tasks:
+  - include_tasks: ../tasks/AD/group/membership.yml
     loop: "{{ attributes_dict.AD_Group_Membership }}"
 - hosts: AD_SetSPN
+  tags: AD_SetSPN
   tasks:
-  - include_tasks: ../tasks/domain/setspn.yml
+  - include_tasks: ../tasks/AD/setspn.yml
     loop: "{{ attributes_dict.AD_SetSPN }}"
 - hosts: AD_MSA_AllowRetrieve
+  tags: AD_MSA_AllowRetrieve
   tasks:
-  - include_tasks: ../tasks/domain/msa/PrincipalsAllowedToRetrieveManagedPassword.yml
+  - include_tasks: ../tasks/AD/msa/PrincipalsAllowedToRetrieveManagedPassword.yml
     loop: "{{ attributes_dict.AD_MSA_AllowRetrieve }}"
+- hosts: AD_Object_Organizational_Unit
+  tags: AD_Object_Organizational_Unit
+  tasks:
+  - include_tasks: ../tasks/AD/ou/move_object.yml
+    loop: "{{ attributes_dict.AD_Object_Organizational_Unit }}"
+- hosts: AD_Object_ACL
+  tags: AD_Object_ACL
+  tasks:
+  - include_tasks: ../tasks/AD/acl/object.yml
+    loop: "{{ attributes_dict.AD_Object_ACL }}"
+- hosts: AD_GPO
+  tags: AD_GPO
+  tasks:
+  - include_tasks: ../tasks/AD/gpo/create.yml
+    loop: "{{ attributes_dict.AD_GPO }}"
+- hosts: AD_GPO_ACL
+  tags: AD_GPO_ACL
+  tasks:
+  - include_tasks: ../tasks/AD/acl/gpo.yml
+    loop: "{{ attributes_dict.AD_GPO_ACL }}"
+- hosts: AD_Unconstrained_Delegation
+  tags: AD_Unconstrained_Delegation
+  tasks:
+  - include_tasks: ../tasks/AD/delegation/unconstrained.yml
+    loop: "{{ attributes_dict.AD_Unconstrained_Delegation }}"
+- hosts: AD_Constrained_Delegation
+  tags: AD_Constrained_Delegation
+  tasks:
+  - include_tasks: ../tasks/AD/delegation/constrained.yml
+    loop: "{{ attributes_dict.AD_Constrained_Delegation }}"

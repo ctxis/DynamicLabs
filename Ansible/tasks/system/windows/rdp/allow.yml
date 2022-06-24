@@ -6,5 +6,5 @@
       - alfa\Samuel.Briggs
     state: present
     domain_server: R0-T0-DC-001.alfa.lab
-    domain_username: alfa\administrator
+    domain_username: "{{ ansible_user + '@' + AD_Join.domain_netbios_name + '.lab' }}"
     domain_password: tX8Hf7kKXKKmI

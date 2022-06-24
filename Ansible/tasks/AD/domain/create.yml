@@ -1,0 +1,61 @@
+- set_fact:
+    AD_Domain: "{{ AD_Domain | default({}) | combine({item.name: item.value}) }}"
+  with_items:
+    - "{{ attributes_dict.AD_Domain }}"
+- win_hostname:
+    name: "{{ custom_hostname }}"
+  when: ansible_os_family == "Windows"
+  register: system
+- win_reboot:
+    post_reboot_delay: 60
+    reboot_timeout: 900
+  when: system.reboot_required
+- name: Set look-up address
+  win_dns_client:
+    adapter_names: '*'
+    ipv4_addresses:
+    - "{{ AD_Domain.domain_dns_server }}"
+    log_path: C:\dns_log.txt
+- win_feature:
+    name: RSAT-AD-PowerShell
+- win_feature:
+    name: AD-Domain-Services
+    include_management_tools: yes
+    include_sub_features: yes
+    state: present
+  register: win_feature
+  until: win_feature is not failed
+  retries: 10
+  delay: 30
+- win_command: "nltest /dsgetdc:{{ AD_Domain.domain_name }}"
+  register: command_result
+  ignore_errors: yes
+- win_shell: |
+    $password = ConvertTo-SecureString "{{ansible_password}}" -AsPlainText -Force
+    $cred = New-Object System.Management.Automation.PSCredential("{{ AD_Domain.domain_parent_name }}\{{ ansible_user }}", $password)
+    $SafeModeAdministratorPassword = ConvertTo-SecureString "TnUBqUJP62vpBqps4aXWwKZndg4DAg8GvKwYUD6TWg" -AsPlainText -Force
+    Install-ADDSDomain -Credential $cred -NewDomainName {{ AD_Domain.domain_name }} -ParentDomainName {{ AD_Domain.domain_parent_name }} -DomainType {{ AD_Domain.domain_type }} -InstallDNS -CreateDNSDelegation -SafeModeAdministratorPassword $SafeModeAdministratorPassword -Force
+  when: command_result.rc != 0
+  register: dcpromo
+- name: Restarting and testing domain availability (Estimated 10 mins).
+  wait_for_connection:
+    delay: 90
+  when: dcpromo.changed
+- set_fact:
+    ansible_winrm_transport: ntlm
+    ansible_domain: ""
+    ansible_user: "{{ ansible_user }}"
+    ansible_password: "{{ ansible_password }}"
+- win_command: "nltest /dsgetdc:"
+  register: command_result
+  until: command_result.rc == 0
+  retries: 180
+  delay: 10
+- set_fact:
+    ansible_winrm_transport: ntlm
+    ansible_domain: "{{ AD_Domain.domain_name }}"
+    ansible_user: "{{ ansible_user }}"
+    ansible_password: "{{ ansible_password }}"
+- win_feature:
+    name: Windows-Defender
+    state: absent

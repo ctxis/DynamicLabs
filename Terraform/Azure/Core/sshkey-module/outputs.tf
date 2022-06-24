@@ -9,12 +9,11 @@ output "public_key" {
 }
 
 output "private_key_path" {
-  description = "Path to the TLS private key file"
-  value       = "${path.cwd}/${var.key_name}_key.pem"
+        description = "Path to the TLS private key file"
+    value       = "../../SSH-Keys/${var.key_name}_key.pem"
 }
 
 output "public_key_path" {
-  description = "Path to the TLS public key file"
-  value       = "${path.cwd}/${var.key_name}_key.pub"
+    description = "Path to the TLS public key file"
+    value       = "../../SSH-Keys/${var.key_name}_key.pub"
 }
-

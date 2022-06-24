@@ -1,0 +1,25 @@
+# Creates a new OU
+#
+# Parameters
+# name - (required) name of the OU
+# path - (required) path where to create the OU
+#
+# Usage example:
+#            {
+#                name = "AD_Organizational_Unit"
+#                value = [
+#                    { name = "Something", path="DC=dynamic, DC=lab" }
+#                    { name = "SomethingElse", path="OU=Something, DC=dynamic, DC=lab" }
+#                ]
+#            },
+
+- win_shell: |
+    try { 
+      New-ADOrganizationalUnit -Name "{{ item.name }}" -Path "{{ item.path }}"
+    } 
+    catch [Microsoft.ActiveDirectory.Management.ADException] { 
+      # We expect error 8305 if the resource already exist, 
+      # see (https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--8200-8999-)
+      if ($_.exception.Errorcode -ne 8305) { throw $_.exception }
+      else { exit 0 }
+    }

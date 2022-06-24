@@ -1,0 +1,24 @@
+# Disable Windows Defender on Windows server systems by uninstalling the feature
+# NOTE: Windows 10 is not supported yet!
+#
+# Examples:
+#    
+#    features    = [ "XXXX", "Win_Defender_Disable" ]
+#
+
+- name: Check Windows Compatibility
+  fail:
+    msg: The Win_Defender_Disable feature is not yet compatible with Windows 10 and only applies to Windows Server
+  when: not hostvars[inventory_hostname].ansible_distribution.startswith('Microsoft Windows Server')
+
+- win_feature:
+    name: Windows-Defender
+    state: absent
+  register: windows_defender_feature
+- win_reboot:
+    post_reboot_delay: 60
+    reboot_timeout: 900
+  when: windows_defender_feature.reboot_required
+
+
+

@@ -1,0 +1,35 @@
+# Execute an inline or an asset PowerShell on Windows
+# Allows implementing custom actions not yet supported by DynamicLabs.
+# Native functionality should be used when available!!!
+#
+# Parameters:
+# inline_script - The content of a PowerShell script
+# script_path - The path to a PowerShell script relative to the assets directory 
+#
+# NOTE: requires assets_path to be explicitly defined in terraform.tfvars, otherwise a AnsibleFileNotFound
+#       is raised.
+#
+# Example:
+#
+# [...]
+# assets_path = "Templates/demo/example/assets/"
+# [...]
+#            {
+#                name = "Win_PowerShell_Script"
+#                value = [
+#                    { # Executes the inline commands
+#                        inline_script = "Write-Host 'Hello World' | Out-File c:\\hello.txt"
+#                    },
+#                    { # Executes the script at Templates/demo/example/assets/configure_service.ps1
+#                        script_path = "configure_service.ps1"
+#                    },
+#                ]
+#            },
+
+- name: Execute inline PowerShell script
+  win_shell: "{{ item.inline_script }}"
+  when: item.inline_script is defined
+
+- name: Execute asset PowerShell script
+  win_shell: "{{ lookup('file','~/assets/' + item.script_path) }}"
+  when: item.script_path is defined

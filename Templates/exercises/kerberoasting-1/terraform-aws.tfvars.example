@@ -4,66 +4,58 @@ AWS_SECRET_KEY  = ""
 AWS_REGION      = "eu-west-2"
 
 ############ / Attacker IP Range
-attacker_ip = ["1.2.3.4/24"] # ACL INACTIVE
+candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
 
 ############ / SSH Key
 public_key_file_candidate    = "candidate_key.pub"
+private_key_file_candidate    = "candidate_key.pem"
 public_key_file_management   = "management_key.pub"
 private_key_file_management  = "management_key.pem"
 
 ############ / Networking
-availability_zone         = "eu-west-2a"
 address_space_vpc         = "10.1.0.0/16"
 address_space_management  = "10.1.254.0/24"  #Tier M
 
 networks = [
     {
-        network_id    = "999"
-        network_tier  = "TM"
-        network_name  = "LabManagement_Net"
+        network_id    = "0"
+        network_name  = "MANAGEMENT"
         address_space = "10.1.254.0/24"
-        public_ip     = true
     },
     {
-        network_id    = "000"
-        network_tier  = "T0"
-        network_name  = "T0_Net"
+        network_id    = "1"
+        network_name  = "INTERNAL"
         address_space = "10.1.1.0/24"
-        public_ip     = false
     },
+    # !!! Internet Facing !!!
     {
-        network_id    = "001"
-        network_tier  = "T1"
-        network_name  = "T1_Internal"
+        network_id    = "2"
+        network_name  = "EXTERNAL"
         address_space = "10.1.2.0/24"
-        public_ip     = false
-    },
-    {
-        network_id    = "002"
-        network_tier  = "T2"
-        network_name  = "T2_Public"
-        address_space = "10.1.3.0/24"
-        public_ip     = true
     }
 ]
 
+
 ############ / Server Instance Details
-managment_server_network_id = "999"
+managment_server_network_id = "0"
 management_server_private_ip = "10.1.254.10"
 
 systems = [
     {
         module      = "microsoft_windows_server_2016"
         size        = "t2.medium"
-        network_id  = "000"
+        network_id  = "1"
         private_ip  = "10.1.1.10"
+        public_ip   = false
         class       = "DC"
-        id          = "001"
-        features    = ["AD_Create", "AD_SecEdit_Access", "AD_User", "AD_User_Password", "AD_Group_Membership", "AD_SetSPN"]
-        attributes = [
+        id          = "01"
+        features    = [
             {
-                name = "AD_Create"
-                value = [{name = "domain_netbios_name", value = "alfa"}]
+                name = "AD_Forest"
+                value = [
+                    {name = "domain_name", value = "dynamic.lab"},
+                    {name = "domain_netbios_name", value = "dynamic"}
+                ]
             },
             {
                 name = "AD_SecEdit_Access"
@@ -77,15 +69,8 @@ systems = [
             {
                 name = "AD_User"
                 value = [
-                    {name = "username", value = "svc-backup-legacy"},
-                    {name = "username", value = "svc-backup"}
-                ]
-            },
-            {
-                name = "AD_User_Password"
-                value = [
-                    {name = "svc-backup-legacy", value = "winter"},
-                    {name = "svc-backup", value = "summer"}
+                    {name = "svc-backup-legacy", password = "winter"},
+                    {name = "svc-backup", password = "summer"}
                 ]
             },
             {
@@ -107,17 +92,27 @@ systems = [
     {
         module      = "microsoft_windows_server_2016"
         size        = "t2.medium"
-        network_id  = "002"
+        network_id  = "2"
         private_ip  = null
-        class       = "WS"
-        id          = "001"
-        features    = ["candidate", "AD_Join"]
-        attributes = [{
-            name = "AD_Join"
-            value = [
-                {name = "domain_netbios_name", value = "alfa"},
-                {name = "domain_dns_server", value = "10.1.1.10"}
-            ]
-        }]
+        public_ip   = true
+        class       = "GS"
+        id          = "01"
+        features    = [
+            {
+                name = "AD_Join"
+                value = [
+                    {name = "domain_name", value = "dynamic.lab"},
+                    {name = "domain_dns_server", value = "10.1.1.10"}
+                ]
+            },
+            {
+                name = "AD_User"
+                value = [{name = "LowPriv", password = "Sup3rSecretString.2021!"}]
+            },
+            {
+                name = "Win_Group_Membership"
+                value = [{name = "Remote Desktop Users", value = "LowPriv"}]
+            }
+        ]
     }
 ]

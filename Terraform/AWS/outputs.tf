@@ -1,9 +1,27 @@
 output "management_server" {
-    value="${module.management_server.server_details}"
+    value = "${module.management_server.details}"
 }
-output "kali" {
-    value="${module.kali.system_details}"
+
+output "Lab_Systems" {
+    value =  "${module.ansible_inventory.systems}"
 }
-output "win_server_2016" {
-    value="${module.windows_server_2016.public_systems}"
+
+output "Public_Lab_Systems" {
+    value =  "${module.ansible_inventory.Public_Lab_Systems}"
+}
+
+output "WARNING" {
+    value = {
+        "1" = "The AD_CleanUp and Win_CleanUp features reset administrative passwords. If used, please scroll above to Ansible output or '~/<domain>/users/<username>' on the management system. Once reset, further Ansible re-runs will error until you manually update the password in the local ansible inventory."
+    }
+}
+
+output "Administrative_Credentials" {
+    value = {
+        "DefaultManagementUsername" = "ubuntu"
+        "DefaultManagementKey" = "Check ./SSH-Keys/ locally."
+        "DefaultWindowsUsername" = "administrator"
+        "DefaultPassword" = random_password.system_password.result
+    }
+    sensitive = true
 }

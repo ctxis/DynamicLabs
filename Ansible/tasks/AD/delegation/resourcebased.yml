@@ -1,0 +1,14 @@
+# Attacking a system using resource based constrained delegation can be done when a user/computer has
+# GenericWrite privileges o a victim computer.
+# 
+# The feature to implement resource based constrained delegation RBCD is not yet implemented;
+# however a misconfiguration that would allow using RBCD for exploitation can be injected using the AD_Object_ACL feature,
+# as shown below:
+#                name = "AD_Object_ACL"
+#                value = [
+#                    { # Grants Generic to attackercomputer on victimcomputer
+#                        objectname = "victimcomputer", # Notice no $ at the end!
+#                        identity = "attackercomputer$", # Notice the $ at the end!
+#                        adright = "GenericAll"
+#                    }
+#                 ]

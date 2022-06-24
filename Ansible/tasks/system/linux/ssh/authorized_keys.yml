@@ -1,0 +1,42 @@
+# Creates a file with optional text content and sets the owner
+#
+# user - pre-existing user to set the key for
+# type - the type of key provided, inline|asset (deafault inline)
+# key - the public key to add to the authorized_keys as a string (required when type = inline)
+# key_path - the public key to add to the authorized_keys as a file path relative to the assets directory (required when type = asset)
+#            NOTE: requires assets_path to be explicitly defined in terraform.tfvars, otherwise a AnsibleFileNotFound
+#            is raised.
+#
+# Example:
+#
+# [...]
+# asset_path = "Templates/demo/example/assets/"
+# [...]
+#            {
+#                name = "Linux_Authorized_Keys"
+#                value = [
+#                    { 
+#                       user = "user1",
+#                       key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD7bRTRERjKA[...]zZKKPA/VOTO1WPIKdwU1N user1@linux1.dynamic.lab"
+#                    },
+#                    { 
+#                       user = "user2",
+#                       type = "asset",
+#                       key_path = "linux1.dynamic.lab/id_rsa.pub"
+#                    }
+#                ]
+#            }
+
+- name: Set authorized key from file
+  authorized_key:
+    user: "{{ item.user }}"
+    state: present
+    key: "{{ item.key }}"
+  when: (item.type | default("inline") ) == "inline"
+
+- name: Set inline authorized key
+  authorized_key:
+    user: "{{ item.user }}"
+    state: present
+    key: "{{ lookup('file', '~/assets/' + item.key_path) }}"
+  when: (item.type | default("inline") ) == "asset"

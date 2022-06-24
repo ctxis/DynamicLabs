@@ -1,0 +1,49 @@
+# Creates an empty GPO and attaches it to an OU
+#
+# Parameters
+# name - (required) name of the GPO
+# description - (optional) comment on the GPO
+# targetdn - (required) path where to link the GPO (e.g. domain, OU)
+#
+# Usage example:
+#            {
+#                name = "AD_GPO"
+#                value = [
+#                    { name = "DomainGPO", targetdn="DC=dynamic, DC=lab" }
+#                    { name = "SomethingOU_GPO", description="A test GPO", targetdn="OU=Something, DC=dynamic, DC=lab" }
+#                ]
+#            },
+
+- win_shell: |
+    if (-not (Get-GPO -Name "{{ item.name }}" -ErrorAction SilentlyContinue)) {
+        New-GPO -Name "{{ item.name }}" -comment "{{ item.description }}" -ErrorAction SilentlyContinue
+    }
+    New-GPLink -Name "{{ item.name }}" -Target "{{ item.targetdn }}" -LinkEnabled Yes -ErrorAction SilentlyContinue
+    $GPLinkResult = $?
+    $GPLinkError = $Error[0]
+    if ($GPLinkResult) {
+        exit 0
+    } elseif ($GPLinkError.Exception.InnerException.HResult -eq  0x800700B7) { 
+        # GPO Link already exists
+        exit 0 
+    } else {
+        throw $GPLinkError.Exception
+    }
+  when: item.description is defined
+
+- win_shell: |
+    if (-not (Get-GPO -Name "{{ item.name }}" -ErrorAction SilentlyContinue)) {
+        New-GPO -Name "{{ item.name }}" -ErrorAction SilentlyContinue
+    }
+    New-GPLink -Name "{{ item.name }}" -Target "{{ item.targetdn }}" -LinkEnabled Yes -ErrorAction SilentlyContinue
+    $GPLinkResult = $?
+    $GPLinkError = $Error[0]
+    if ($GPLinkResult) {
+        exit 0
+    } elseif ($GPLinkError.Exception.InnerException.HResult -eq  0x800700B7) { 
+        # GPO Link already exists
+        exit 0 
+    } else {
+        throw $GPLinkError.Exception
+    }
+  when: item.comment is not defined

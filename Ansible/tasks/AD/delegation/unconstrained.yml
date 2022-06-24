@@ -1,0 +1,15 @@
+# Configures unconstrained delegation for an account
+#
+# name - account to configure with unconstrained delegation
+# 
+# Example:
+#            {
+#                name = "AD_Unconstrained_Delegation"
+#                value = [
+#                    { name = "some_account" }
+#                ]
+#            },
+
+- name: Unconstrained delegation
+  win_shell: |
+    Set-ADAccountControl -identity {{ item.name }} -TrustedForDelegation $true

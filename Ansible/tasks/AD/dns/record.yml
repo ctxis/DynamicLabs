@@ -1,0 +1,31 @@
+# Creates a DNS Record in an existing zone
+# Parameters:
+#   name - the name of the record (without the domain)
+#   zone - the name of the pre-existing zone (domain) for the record
+#   type - the type or record e.g. A, CNAME (default is A)
+#   value - the value for the record
+#
+# Example usage:
+#
+# {
+#     name = "AD_DNS_Record"
+#     value = [
+#       {  # Creates an A record for database.dynamic.lab pointing to 10.20.1.37
+#           name  = "database", 
+#           zone  = "dynamic.lab", 
+#           value = "10.20.1.37" 
+#       },
+#       { # Creates a CNAME record for web.dynamic.lab pointing to web01.dynamic.lab
+#           name  = "web", 
+#           zone  = "dynamic.lab", 
+#           type  = "CNAME", 
+#           value = "web01.dynamic.lab" },
+#     ]
+#  }
+#
+#
+- win_dns_record:
+    name: "{{ item.name }}"
+    zone: "{{ item.zone }}"
+    type: "{{ item.type | default('A')}}"
+    value: "{{ item.value }}"

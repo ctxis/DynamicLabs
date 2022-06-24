@@ -1,17 +1,43 @@
-variable location {}
-variable address_space {
-    type = list(string)
+variable location {
+    type    = string
+    default = "uksouth"
 }
 
-variable public_key_file_candidate {}
-variable public_key_file_management {}
-variable private_key_file_management {}
+variable address_space {
+    type    = list(string)
+    default = ["10.1.0.0/16"]
+}
 
-variable "attacker_ip" {
+variable address_space_management {
+    default = ["10.1.254.0/24"]
+}
+
+variable public_key_file_candidate {
+    default = "candidate_key.pub"
+}
+variable private_key_file_candidate {
+    default = "candidate_key.pem"
+}
+variable public_key_file_management {
+    default = "management_key.pub"
+}
+variable private_key_file_management {
+    default = "management_key.pub"
+}
+
+variable "candidate_ip" {
     default = ["0.0.0.0/0"]
 }
 
-variable "managment_server_network_id" {}
+# This variable defines which sub-network should have 3389 open to candidate_ip CIDR range.
+variable "candidate_network" {
+    default = "3"
+}
+
+variable "managment_server_network_id" {
+    default = "MAN"
+}
+
 variable "management_server_private_ip" {
     default = "10.1.254.10"
 }
@@ -21,37 +47,68 @@ variable "systems" {
         module=string,
         size=string,
         network_id=string,
+        hostname=string,
         private_ip=string,
+        public_ip=bool,
         class=string,
         id=string,
-        features=list(string),
-        attributes=list(object({
+        features=list(object({
             name=string,
-            value=list(object({
-                name=string,
-                value=string
-            }))
+            value=list(map(string))
         }))
     }))
     default = [{
-        module      = "microsoft_windows_server_2016"
-        size        = "Standard_B1s"
-        network_id  = "001"
-        private_ip  = null
-        class       = "GS"
-        id          = "001"
-        features    = []
-        attributes  = []
+        module                      = "microsoft_windows_server_2016"
+        size                        = "Standard_B1s"
+        network_id                  = "001"
+        hostname                    = null
+        private_ip                  = null
+        public_ip                   = false
+        class                       = "GS"
+        id                          = "001"
+        features                    = []
     }]
 }
 
 variable "networks"{
-  type = list(object({network_id=string, network_tier=string, network_name=string, address_space=list(string), public_ip=bool}))
+  type = list(object({network_id=string, network_name=string, address_space=list(string)}))
   default = [{
         network_id    = "000"
-        network_tier  = "T0"
         network_name  = "T0_Net"
         address_space = ["10.1.1.0/24"]
-        public_ip     = false
     }]
+}
+
+variable "assets_path" {
+    type = string
+    default = null
+}
+
+# Use by adding to your terraform command:
+#   -var="force_ansible_redeploy=true"
+variable "force_ansible_redeploy" {
+    description = "Force redeploying Ansible code to management server at every run. Useful during development."
+    default = false
+}
+
+# Use by adding to your terraform command:
+#   -var="ansible_tags=AD_User" 
+variable "ansible_tags" {
+    description = "Ansible tags to execute. Useful during development to select a subset such as AD_User"
+    default = "all"
+}
+
+variable "security_rules" {
+    type = list(object({
+        network_id                      = string,
+        name                            = string,
+        priority                        = string,
+        direction                       = string,
+        access                          = string,
+        protocol                        = string,
+        source_port_ranges              = list(string),
+        destination_port_ranges         = list(string),
+        source_address_prefixes         = list(string),
+        destination_address_prefixes    = list(string),
+    }))
 }

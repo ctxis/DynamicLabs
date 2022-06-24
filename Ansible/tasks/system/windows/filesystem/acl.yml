@@ -1,0 +1,32 @@
+
+# fsrights = comma separated list of rights. See rights at https://msdn.microsoft.com/en-us/library/system.security.accesscontrol.filesystemrights.aspx
+# path = filesystem path
+# inheritance = None/ContainerInherit/ObjectInherit (can be combined as comma separated list) - see https://docs.microsoft.com/en-us/dotnet/api/system.security.accesscontrol.inheritanceflags?redirectedfrom=MSDN&view=net-5.0
+# propagation = (depends on inheritance) None/NoPropagateInherit/InheritOnly - 
+#
+# Example usage:
+#
+#            {
+#            name = "Win_Filesystem_ACL"
+#                value = [
+#                    {
+#                        path = "C:\\Directory1", 
+#                        identity = "Users", 
+#                        fsright = "Read,ListDirectory", 
+#                        inheritance = "None", 
+#                        propagation = "NoPropagateInherit"
+#                    },
+#                    {   path = "C:\\Directory1\\Directory2", 
+#                        identity = "DYNAMIC\\user1", 
+#                        fsrights = "FullControl"
+#                     }
+#                ]
+#            },
+
+- win_acl:
+    path: "{{ item.path }}"
+    user: "{{ item.identity }}"
+    type: "{{ item.type | default('allow') }}"
+    rights: "{{ item.fsright | default('FullControl') }}"
+    inheritance: "{{ item.inheritance | default('ContainerInherit,ObjectInherit') }}"
+    propagation: "{{ item.propagation | default('None') }}"
