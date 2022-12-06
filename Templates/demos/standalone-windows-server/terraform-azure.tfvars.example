@@ -1,0 +1,57 @@
+########### / Location
+location = "uksouth"
+
+############ / Attacker IP Range
+candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
+
+############ / SSH Key
+public_key_file_candidate    = "candidate_key.pub"
+private_key_file_candidate   = "candidate_key.pem"
+
+############ / Networking
+address_space_lab         = "10.1.0.0/16"
+address_space_management  = "10.1.254.0/24"
+
+networks = [
+    {
+        # Exposes RDP and SSH ports to the candidate IP ranges
+        network_id    = "1"
+        network_name  = "CANDIDATE_EXTERNAL"
+        network_template = "candidate"
+        address_space = "10.1.1.0/24"
+    }
+]
+
+security_rules = [
+]
+
+############ / Systems
+systems = [
+    {
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
+        size        = "Standard_B1ms"
+        network_id  = "1"
+        hostname    = null
+        private_ip  = null
+        public_ip   = true
+        class       = "GS"
+        id          = "01"
+        features    = [
+            {
+                name = "Win_User"
+                value = [
+                    {name = "HighPriv", password = "TheSkyIsTheLimit.2022?"},
+                    {name = "LowPriv", password = "Sup3rSecretString.2022!"}
+                ]
+            },
+            {
+                name = "Win_Group_Membership"
+                value = [
+                    {name = "Administrators", value = "HighPriv"},
+                    {name = "Remote Desktop Users", value = "LowPriv"}
+                ]
+            }
+        ]
+    }
+]

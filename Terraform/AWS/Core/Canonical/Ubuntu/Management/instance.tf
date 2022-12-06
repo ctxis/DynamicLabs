@@ -6,7 +6,7 @@ data "aws_ami" "ubuntu" {
     most_recent = true
     filter {
         name   = "name"
-        values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+        values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
     }
     filter {
         name   = "virtualization-type"
@@ -17,7 +17,7 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "management" {
     ami                         = data.aws_ami.ubuntu.id
-    instance_type               = "t2.micro"
+    instance_type               = "t2.small"
     subnet_id                   = var.subnet_id_management
     key_name                    = var.key_name
     private_ip                  = var.private_ip
@@ -135,7 +135,7 @@ resource "null_resource" "ansible_executioner" {
 
     provisioner "remote-exec" {
         inline = [
-            "ansible-playbook -i ansible-inventory.yml ./Ansible/site.yml --tags ${var.ansible_tags} -vvvv"
+            "ansible-playbook -i ansible-inventory.yml -f 10 ./Ansible/site.yml --tags ${var.ansible_tags} --limit ${var.ansible_limit} -vvvv"
         ]
     }
     

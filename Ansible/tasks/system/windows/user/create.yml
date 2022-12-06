@@ -18,10 +18,32 @@
 # Legacy DEPRECATED syntax:
 #   {name = "username", value = "LocalUser"},
 
+# Save the user password 
+
+- set_fact:
+    user_password: "{{ item.password }}"
+  when: item.password is defined
+
+- local_action:
+    module: file
+    path: "{{ '~/credentials/local/' + custom_hostname }}"
+    state: directory
+  when: (item.enabled | default('yes')) == 'yes' and item.password is defined
+
+- local_action:
+    module: copy
+    dest: "{{ '~/credentials/local/' + custom_hostname + '/' + item.name }}"
+    content: "{{ item.password }}"
+  when: (item.enabled | default('yes')) == 'yes' and item.password is defined
+
+- set_fact:
+    user_password: "{{ lookup('password', '~/credentials/local/' + custom_hostname + '/' + item.name + ' chars=ascii_letters,digits,punctuation length=12') }}"
+  when: (item.enabled | default('yes')) == 'no' and item.password is not defined
+
 - win_user:
     # Keep backward compatibility with deprecated syntax
     name: "{{ item.value | default(item.name) }}"
-    password: "{{ item.password | default(lookup('password', '~/credentials/local/' + custom_hostname + '/' + (item.value | default(item.name)) + ' chars=ascii_letters,digits,punctuation length=12')) }}"
+    password: "{{ user_password }}"
     password_never_expires: "{{ item.password_never_expires | default('yes') }}"
     fullname: "{{ item.full_name | default('') }}"
     state: present

@@ -3,13 +3,14 @@ variable location {
     default = "uksouth"
 }
 
-variable address_space {
-    type    = list(string)
-    default = ["10.1.0.0/16"]
+variable address_space_lab {
+    type    = string
+    default = "10.1.0.0/16"
 }
 
 variable address_space_management {
-    default = ["10.1.254.0/24"]
+    type    = string
+    default = "10.1.254.0/24"
 }
 
 variable public_key_file_candidate {
@@ -45,6 +46,7 @@ variable "management_server_private_ip" {
 variable "systems" {
     type = list(object({
         module=string,
+	os_version=string,
         size=string,
         network_id=string,
         hostname=string,
@@ -58,7 +60,8 @@ variable "systems" {
         }))
     }))
     default = [{
-        module                      = "microsoft_windows_server_2016"
+        module                      = "microsoft_windows_server"
+	os_version                  = "2019"
         size                        = "Standard_B1s"
         network_id                  = "001"
         hostname                    = null
@@ -70,12 +73,13 @@ variable "systems" {
     }]
 }
 
-variable "networks"{
-  type = list(object({network_id=string, network_name=string, address_space=list(string)}))
-  default = [{
-        network_id    = "000"
-        network_name  = "T0_Net"
-        address_space = ["10.1.1.0/24"]
+variable "networks" {
+    type = list(object({network_id=string, network_name=string,network_template=string,address_space=string}))
+    default = [{
+        network_id    = "1"
+        network_name  = "Candidate"
+        address_space = "10.1.1.0/24"
+        network_template = "candidate"
     }]
 }
 
@@ -95,6 +99,13 @@ variable "force_ansible_redeploy" {
 #   -var="ansible_tags=AD_User" 
 variable "ansible_tags" {
     description = "Ansible tags to execute. Useful during development to select a subset such as AD_User"
+    default = "all"
+}
+
+# Use by adding to your terraform command:
+#   -var="ansible_limit=10.1.1.10" 
+variable "ansible_limit" {
+    description = "Limit execution of ansible to specified hosts. Useful during development to apply changes to a specific host only"
     default = "all"
 }
 

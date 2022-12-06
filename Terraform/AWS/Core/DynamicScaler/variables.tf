@@ -1,6 +1,7 @@
 variable "systems" {
     type = list(object({
         module=string,
+        os_version=string,
         size=string,
         network_id=string,
         hostname=string,
@@ -14,7 +15,8 @@ variable "systems" {
         }))
     }))
     default = [{
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
         size        = "t2.small"
         network_id  = "1"
         hostname    = null

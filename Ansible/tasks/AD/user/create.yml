@@ -38,18 +38,34 @@
 #                ]
 #            }
 # 
-# Legacy DEPRECATED syntax:
-#    {name = "username", value = "winfred.sutton"}
+
+# Save the user password 
+
+- set_fact:
+    user_password: "{{ item.password }}"
+  when: item.password is defined
+
+- local_action:
+    module: file
+    path: "{{ '~/credentials/domain/' + ansible_domain }}"
+    state: directory
+  when: item.password is defined
+
+- local_action:
+    module: copy
+    dest: "{{ '~/credentials/domain/' + ansible_domain + '/' + item.name }}"
+    content: "{{ item.password }}"
+  when: item.password is defined
+
+- set_fact:
+    user_password: "{{ lookup('password', '~/credentials/domain/' + ansible_domain + '/' + item.name + ' chars=ascii_letters,digits,punctuation length=12') }}"
+  when: item.password is not defined
 
 # No OU Specified
 - win_domain_user:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
-    # Accept value for name for backward compatibility
-    name: "{{ item.value | default(item.name) }}"
-    upn: "{{ (item.value | default(item.name)) + '@' + ansible_domain }}"
-    password: "{{ item.password | default(lookup('password', '~/credentials/domain/' + ansible_domain + '/' + (item.value | default(item.name)) + ' chars=ascii_letters,digits,punctuation length=12')) }}"
+    name: "{{ item.name }}"
+    upn: "{{ item.name + '@' + ansible_domain }}"
+    password: "{{ user_password }}"
     password_never_expires: "{{ item.password_never_expires | default('yes') }}"
     enabled: "{{ item.enabled | default('yes') }}"
     state: present
@@ -58,13 +74,9 @@
 
 # OU Specified
 - win_domain_user:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
-    # Accept value for name for backward compatibility
-    name: "{{ item.value | default(item.name) }}"
-    upn: "{{ (item.value | default(item.name)) + '@' + ansible_domain }}"
-    password: "{{ item.password | default(lookup('password', '~/credentials/domain/' + ansible_domain + '/' + (item.value | default(item.name)) + ' chars=ascii_letters,digits,punctuation length=12')) }}"
+    name: "{{ item.name }}"
+    upn: "{{ item.name + '@' + ansible_domain }}"
+    password: "{{ user_password }}"
     password_never_expires: "{{ item.password_never_expires | default('yes') }}"
     enabled: "{{ item.enabled | default('yes') }}"
     path: "{{ item.ou }}"
@@ -78,41 +90,25 @@
 
 # Set Firstname
 - win_domain_user:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
-    # Accept value for name for backward compatibility
-    name: "{{ item.value | default(item.name) }}"
+    name: "{{ item.name }}"
     firstname: "{{ item.first_name }}"
   when: item.first_name is defined
 
 # Set Lastname
 - win_domain_user:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
-    # Accept value for name for backward compatibility
-    name: "{{ item.value | default(item.name) }}"
+    name: "{{ item.name }}"
     surname: "{{ item.last_name }}"
   when: item.last_name is defined
 
 # Set Description
 - win_domain_user:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
-    # Accept value for name for backward compatibility
-    name: "{{ item.value | default(item.name) }}"
+    name: "{{ item.name }}"
     description: "{{ item.description }}"
   when: item.description is defined
 
   # Set Home Directory
 - win_domain_user:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
-    # Accept value for name for backward compatibility
-    name: "{{ item.value | default(item.name) }}"
+    name: "{{ item.name }}"
     attributes:
         homeDirectory: "{{ item.home_directory }}"
   when: item.home_directory is defined
@@ -125,11 +121,7 @@
 
 # Set User Account Control UAC
 - win_domain_user:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
-    # Accept value for name for backward compatibility
-    name: "{{ item.value | default(item.name) }}"
+    name: "{{ item.name }}"
     attributes:
         userAccountControl: "{{ item.user_account_control | int(base=16) }}"
   when: item.user_account_control is defined

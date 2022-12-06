@@ -10,18 +10,12 @@
 #            },
 
 - win_domain_group:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
     name: "{{ item.name }}"
     scope: "{{ item.scope | default('global') }}"
     description: "{{ item.description }}"
     state: present
   when: item.description is defined
 - win_domain_group:
-    domain_server: "{{ ansible_domain }}"
-    domain_username: "{{ ansible_user }}"
-    domain_password: "{{ ansible_password }}"
     name: "{{ item.name }}"
     scope: "{{ item.scope | default('global') }}"
     state: present

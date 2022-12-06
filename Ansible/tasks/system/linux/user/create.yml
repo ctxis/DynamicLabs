@@ -24,13 +24,38 @@
 #                  ]
 #            }
 
+# Save the user password 
+
+- set_fact:
+    user_password: "{{ item.password }}"
+  when: item.password is defined
+
+- local_action:
+    module: file
+    path: "{{ '~/credentials/local/' + custom_hostname }}"
+    state: directory
+  when: (item.enabled | default('yes')) == 'yes' and item.password is defined
+
+- local_action:
+    module: copy
+    dest: "{{ '~/credentials/local/' + custom_hostname + '/' + item.name }}"
+    content: "{{ item.password }}"
+  when: (item.enabled | default('yes')) == 'yes' and item.password is defined
+
+- set_fact:
+    user_password: "{{ lookup('password', '~/credentials/local/' + custom_hostname + '/' + item.name + ' chars=ascii_letters,digits,punctuation length=12') }}"
+  when: (item.enabled | default('yes')) == 'yes' and item.password is not defined
+
+- debug:
+    var: user_password
+
 - user:
     name: "{{ item.name }}"
     comment: "{{ item.comment | default() }}"
     shell: "{{ item.shell | default('/bin/bash')}}"
     groups: "{{ item.groups | default() }}"
     append: yes
-    password: "{{ item.password | default(lookup('password', '~/credentials/local/' + custom_hostname + '/' + item.name + ' chars=ascii_letters,digits,punctuation length=12')) | password_hash('sha512', 'mysecretsalt') }}"
+    password: "{{ user_password }}"
     expires: -1
   when: (item.enabled | default('yes')) == "yes"
 

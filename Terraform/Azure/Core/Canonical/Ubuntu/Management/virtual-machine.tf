@@ -41,8 +41,8 @@ resource "azurerm_virtual_machine" "management" {
 
     storage_image_reference {
         publisher = "Canonical"
-        offer     = "0001-com-ubuntu-server-focal"
-        sku       = "20_04-lts"
+        offer     = "0001-com-ubuntu-server-jammy"
+        sku       = "22_04-lts"
         version   = "latest"
     }
 
@@ -50,7 +50,7 @@ resource "azurerm_virtual_machine" "management" {
         name              = "${local.server_name}-OSDisk1"
         caching           = "ReadWrite"
         create_option     = "FromImage"
-        managed_disk_type = "Standard_LRS"
+        managed_disk_type = "StandardSSD_LRS"
     }
     
     tags = {
@@ -138,10 +138,7 @@ resource "null_resource" "ansible_assets" {
 resource "null_resource" "ansible_executioner" {
     depends_on = [
         azurerm_virtual_machine.management,
-        null_resource.ansible_assets,
-        #module.windows_server_2016,
-        #module.windows_10,
-        #module.ubuntu_20_04
+        null_resource.ansible_assets
     ]
     
     triggers = {
@@ -187,7 +184,7 @@ resource "null_resource" "ansible_executioner" {
 
     provisioner "remote-exec" {
         inline = [
-            "ansible-playbook -i ansible-inventory.yml -f 10 ./Ansible/site.yml --tags ${var.ansible_tags} -vvvv"
+            "ansible-playbook -i ansible-inventory.yml -f 10 ./Ansible/site.yml --tags ${var.ansible_tags} --limit ${var.ansible_limit} -vvvv"
         ]
     }
 

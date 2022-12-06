@@ -4,7 +4,7 @@ variable "AWS_REGION" {
     default = "eu-west-2"
 }
 
-variable address_space_vpc {
+variable address_space_lab {
     default = "10.1.0.0/16"
 }
 
@@ -27,11 +27,6 @@ variable private_key_file_management {
 
 variable "candidate_ip" {}
 
-# This variable defines which sub-network should have 3389 open to candidate_ip CIDR range.
-variable "candidate_network" {
-    default = "3"
-}
-
 variable "managment_server_network_id" {
     default = "MAN"
 }
@@ -41,11 +36,12 @@ variable "management_server_private_ip" {
 }
 
 variable "networks" {
-  type = list(object({network_id=string, network_name=string,address_space=string}))
-  default = [{
-        network_id    = "MAN"
-        network_name  = "Management"
+    type = list(object({network_id=string, network_name=string,address_space=string,network_template=string}))
+    default = [{
+        network_id    = "1"
+        network_name  = "Candidate"
         address_space = "10.1.1.0/24"
+        network_template = "candidate"
     }]
 }
 
@@ -63,6 +59,7 @@ variable "security_rules" {
 variable "systems" {
     type = list(object({
         module=string,
+        os_version=string,
         size=string,
         network_id=string,
         hostname=string,
@@ -76,7 +73,8 @@ variable "systems" {
         }))
     }))
     default = [{
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = 2022
         size        = "t2.small"
         network_id  = "1"
         hostname    = null
@@ -104,5 +102,12 @@ variable "force_ansible_redeploy" {
 #   -var="ansible_tags=AD_User" 
 variable "ansible_tags" {
     description = "Ansible tags to execute. Useful during development to select a subset such as AD_User"
+    default = "all"
+}
+
+# Use by adding to your terraform command:
+#   -var="ansible_limit=10.1.1.10" 
+variable "ansible_limit" {
+    description = "Limit execution of ansible to specified hosts. Useful during development to apply changes to a specific host only"
     default = "all"
 }

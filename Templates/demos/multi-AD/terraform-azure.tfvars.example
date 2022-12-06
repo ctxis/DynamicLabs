@@ -10,77 +10,33 @@ public_key_file_candidate    = "candidate_key.pub"
 private_key_file_candidate   = "candidate_key.pem"
 
 ############ / Networking
+address_space_lab         = "10.1.0.0/16"
+address_space_management  = "10.1.254.0/24"
+
 networks = [
     {
         network_id    = "1"
         network_name  = "INTERNAL"
-        address_space = ["10.1.1.0/24"]
-    },
-    # !!! Internet Facing !!!
+        network_template = "internal_permissive"
+        address_space = "10.1.1.0/24"
+    },    
     {
+        # Exposes RDP and SSH ports to the candidate IP ranges
         network_id    = "2"
         network_name  = "CANDIDATE_EXTERNAL"
-        address_space = ["10.1.2.0/24"]
+        network_template = "candidate"
+        address_space = "10.1.2.0/24"
     }
 ]
 
-############ / Security Rules
 security_rules = [
-    {
-        network_id                      = 1
-        name                            = "1"
-        priority                        = 1000
-        direction                       = "Inbound"
-        access                          = "Allow"
-        protocol                        = "*"
-        source_port_ranges              = ["0-65535"]
-        destination_port_ranges         = ["0-65535"]
-        source_address_prefixes         = ["10.1.0.0/16"]
-        destination_address_prefixes    = ["10.1.0.0/16"]
-    },
-    {
-        network_id                      = 1
-        name                            = "2"
-        priority                        = 1000
-        direction                       = "Outbound"
-        access                          = "Allow"
-        protocol                        = "*"
-        source_port_ranges              = ["0-65535"]
-        destination_port_ranges         = ["0-65535"]
-        source_address_prefixes         = ["10.1.0.0/16"]
-        destination_address_prefixes    = ["0.0.0.0/0"]
-    },
-    {
-        network_id                      = 2
-        name                            = "3"
-        priority                        = 1000
-        direction                       = "Inbound"
-        access                          = "Allow"
-        protocol                        = "*"
-        source_port_ranges              = ["0-65535"]
-        destination_port_ranges         = ["0-65535"]
-        source_address_prefixes         = ["10.1.0.0/16"]
-        destination_address_prefixes    = ["10.1.0.0/16"]
-    },
-    {
-        network_id                      = 2
-        name                            = "4"
-        priority                        = 1000
-        direction                       = "Outbound"
-        access                          = "Allow"
-        protocol                        = "*"
-        source_port_ranges              = ["0-65535"]
-        destination_port_ranges         = ["0-65535"]
-        source_address_prefixes         = ["10.1.0.0/16"]
-        destination_address_prefixes    = ["0.0.0.0/0"]
-    }
 ]
-
 
 ############ / Systems
 systems = [
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
         size        = "Standard_B2s"
         network_id  = "1"
         hostname    = null
@@ -97,6 +53,14 @@ systems = [
                 ]
             },
             {
+                name = "AD_User"
+                value = [ {name = "HighPriv", password = "TheSkyIsTheLimit.2022?"} ]
+            },
+            {
+                name = "AD_Group_Membership"
+                value = [{name = "Enterprise Admins", value = "HighPriv"}]
+            },
+            {
                 name = "AD_SecEdit_Access"
                 value = [
                     {name = "MinimumPasswordAge", value = "0"},
@@ -108,7 +72,8 @@ systems = [
         ]
     },
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
         size        = "Standard_B2s"
         network_id  = "1"
         hostname    = null
@@ -127,6 +92,10 @@ systems = [
                 ]
             },
             {
+                name = "AD_User"
+                value = [{name = "LowPriv", password = "Sup3rSecretString.2021!"}]
+            },
+            {
                 name = "AD_SecEdit_Access"
                 value = [
                     {name = "MinimumPasswordAge", value = "0"},
@@ -138,7 +107,8 @@ systems = [
         ]
     },
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
         size        = "Standard_B1ms"
         network_id  = "2"
         hostname    = null
@@ -153,10 +123,6 @@ systems = [
                     {name = "domain_name", value = "alfa.dynamic.lab"},
                     {name = "domain_dns_server", value = "10.1.1.11"},
                 ]
-            },
-            {
-                name = "AD_User"
-                value = [{name = "LowPriv", password = "Sup3rSecretString.2021!"}]
             },
             {
                 name = "Win_Group_Membership"

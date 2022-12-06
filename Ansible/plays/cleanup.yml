@@ -1,22 +1,22 @@
-- hosts: AD_Join
-  tasks:
-  - win_user:
-        name: "Administrator"
-        state: query
-    register: administrator_user_status
-  - win_user:
-        name: "Ansible"
-        state: query
-    register: ansible_user_status
-
-  - win_user:
-        name: "Administrator"
-        account_disabled: yes
-    when: administrator_user_status.state == "present"
-  - win_user:
-        name: "Ansible"
-        account_disabled: yes
-    when: ansible_user_status.state == "present"
+#- hosts: AD_Join
+#  tasks:
+#  - win_user:
+#        name: "Administrator"
+#        state: query
+#    register: administrator_user_status
+#  - win_user:
+#        name: "Ansible"
+#        state: query
+#    register: ansible_user_status
+#
+#  - win_user:
+#        name: "Administrator"
+#        account_disabled: yes
+#    when: administrator_user_status.state == "present"
+#  - win_user:
+#        name: "Ansible"
+#        account_disabled: yes
+#    when: ansible_user_status.state == "present"
 
 - hosts: AD_CleanUp
   tasks:

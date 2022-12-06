@@ -27,3 +27,8 @@
 - import_playbook: plays/cleanup.yml
   tags: cleanup_play
   any_errors_fatal: true
+
+# Print carepackage
+- import_playbook: plays/carepackage.yml
+  tags: carepackage_play
+  any_errors_fatal: true

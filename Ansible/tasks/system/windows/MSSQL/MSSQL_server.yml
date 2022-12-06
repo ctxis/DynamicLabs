@@ -46,6 +46,7 @@
 - win_chocolatey:
     name: sql-server-express
     state: present
+    install_args: "/ADDCURRENTUSERASSQLADMIN"
   vars:
     # Workaround for error "Exit code was '-2068774911'."
     ansible_become: yes
@@ -71,6 +72,17 @@
   win_shell: | 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Install-PackageProvider -Name NuGet -Force
+
+# Workaround for win_psmodule error: 
+#   "Problems adding a prerequisite module PowerShellGet A parameter cannot be found that matches parameter name 'AcceptLicense'."
+# See https://github.com/ansible-collections/community.windows/issues/424
+# Current latest version  1.11.0 is affected.
+- name: Install PowerShellGet minimumversion 1.6.0
+  win_shell: | 
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    Register-PSRepository -Default
+    install-module Powershellget -minimumversion 1.6.0 -force
 
 - win_psmodule:
     name: SqlServer
@@ -119,13 +131,13 @@
 
 - name: Create SysAdmin User
   win_shell: | 
-    import-module sqlserver
-    $db_instance = $env:COMPUTERNAME
-    $db_user_exists = get-sqllogin -ServerInstance $db_instance | where {$_.Name -eq "{{ item.sysadmin }}"}
-    if (! $db_user_exists) {
-      add-sqllogin -ServerInstance $db_instance -LoginName "{{ item.sysadmin }}" -LoginType "WindowsUser" -DefaultDatabase "Master" -Enable  -GrantConnectSql
-      invoke-sqlcmd -serverinstance $db_instance "EXEC sp_addsrvrolemember '{{ item.sysadmin }}','sysadmin'; "
-    }
+      import-module sqlserver
+      $db_instance = $env:COMPUTERNAME
+      $db_user_exists = get-sqllogin -ServerInstance $db_instance | where {$_.Name -eq "{{ item.sysadmin }}"}
+      if (! $db_user_exists) {
+        add-sqllogin -ServerInstance $db_instance -LoginName "{{ item.sysadmin }}" -LoginType "WindowsUser" -DefaultDatabase "Master" -Enable  -GrantConnectSql
+        invoke-sqlcmd -serverinstance $db_instance "EXEC sp_addsrvrolemember '{{ item.sysadmin }}','sysadmin'; "
+      }
   when: item.sysadmin is defined
 
 - name: Create Optional Database 
@@ -136,7 +148,13 @@
     $db_name_exists = Get-SqlDatabase -ServerInstance $db_instance | where {$_.Name -eq $dbname}
     if (! $db_name_exists) {
       $db = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Database -Argumentlist $db_instance, $dbname 
-      $db.create()
+      try {
+          $db.Create()
+      }
+      catch {
+          Write-Host $Error[0].Exception
+          throw "Database creation failed. See above error."
+      }
     }
   when: item.db_name is defined
 
