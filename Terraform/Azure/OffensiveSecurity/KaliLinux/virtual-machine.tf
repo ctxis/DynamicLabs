@@ -26,9 +26,11 @@ resource "azurerm_virtual_machine" "kali" {
     delete_data_disks_on_termination = true
     # depends_on = [ azurerm_public_ip.kali ]
 
+    # The kali machine from publisher "kali-linux" is no longer available
+    # thus, a Debian machine was used to replace Kali
     storage_image_reference {
         publisher = "kali-linux"
-        offer     = "kali-linux"
+        offer     = "kali"
         sku       = "kali"
         version   = "latest"
     }
@@ -36,16 +38,15 @@ resource "azurerm_virtual_machine" "kali" {
     plan {
         name      = "kali"
         publisher = "kali-linux"
-        product   = "kali-linux"
+        product   = "kali"
     }
 
     storage_os_disk {
         name              = "${each.value["name"]}-disk1"
-        caching           = "ReadWrite"
+        #caching           = "ReadWrite"
         create_option     = "FromImage"
         # To try speed up the upgrade process use faster storage
-        managed_disk_type = "Premium_LRS"
-        #managed_disk_type = "Standard_LRS"
+        # managed_disk_type = "StandardSSD_LRS"
     }
 
     os_profile {
@@ -64,11 +65,11 @@ resource "azurerm_virtual_machine" "kali" {
     
     # The verision of Kali Linux in Azure is ancient, 2019.2 at the time of writing
     # This installs an updated repo key
-    provisioner "remote-exec" {
-        inline = [
-            "curl https://archive.kali.org/archive-key.asc  | sudo apt-key add",
-        ]
-    }
+#    provisioner "remote-exec" {
+#        inline = [
+#            "wget -q -O - https://archive.kali.org/archive-key.asc  | sudo apt-key add",
+#        ]
+#    }
     
     connection {
         private_key = var.private_key

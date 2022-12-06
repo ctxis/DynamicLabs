@@ -1,3 +1,6 @@
+######## / Ignore Terraform binary
+**/terraform
+
 ######## / Ignore Terraform state
 **/.terraform
 **/*.tfstate
@@ -6,11 +9,14 @@
 **/*.tfstate.backup
 **/*.tfvars
 **/*.hcl
+**/terraform.tfstate.d
 
 ######## / Ignore SSH Keys
-**/*.pub
-**/*.pem
 **/SSH-Keys/*
 
 ######## Ignore dynamically-generated Ansible inventory
 **/*ansible-inventory.yml
+
+######## Ignore various OS files
+**/Thumbs.db
+**/.swp

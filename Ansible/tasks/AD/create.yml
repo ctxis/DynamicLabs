@@ -1,3 +1,24 @@
+---
+# 
+# Creates a new Active Directory forest, promoting the system to a domain controller
+# 
+# Parameters:
+# domain_name = dns name of the first domain in the forest, e.g. dynamic.lab
+# domain_netbios_name = NetBIOS domain name, typically the subdomain of the dns name. e.g. dynamic
+#
+# Notes:
+# Systems with the AD_Forest feature should always have a static IP assigned.
+# 
+# Examples:
+#             {
+#                name = "AD_Forest"
+#                value = [
+#                    {name = "domain_name", value = "dynamic.lab"},
+#                    {name = "domain_netbios_name", value = "dynamic"}
+#                ]
+#              }
+#
+
 - set_fact:
     AD_Forest: "{{ AD_Forest | default({}) | combine({item.name: item.value}) }}"
   with_items:
@@ -38,11 +59,3 @@
   retries: 180
   delay: 10
 - win_shell: "if ((Get-KdsRootKey).Length -Eq 0) { Add-KdsRootKey –EffectiveTime ((get-date).addhours(-10)) }"
-- set_fact:
-    ansible_winrm_transport: ntlm
-    ansible_domain: "{{ AD_Forest.domain_name }}"
-    ansible_user: "{{ ansible_user }}"
-    ansible_password: "{{ ansible_password }}"
-- win_feature:
-    name: Windows-Defender
-    state: absent

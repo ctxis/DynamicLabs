@@ -1,5 +1,8 @@
 all:
     hosts:
+        localhost:
+            ansible_connection: local
+            features: []          
         %{ for detail in system_details}${detail.private_ip}:
             %{ for key,value in detail.ansible_data}${key}: ${value}
             %{ endfor }

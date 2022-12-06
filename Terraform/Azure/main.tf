@@ -24,7 +24,7 @@ resource "random_password" "system_password" {
     special             = true
     override_special    = "!^.?_%@-+"
     upper               = true
-    number              = true
+    numeric             = true
     min_lower           = 1
     min_numeric         = 1
     min_special         = 1
@@ -51,12 +51,11 @@ module "network" {
     source                      = "./Core/network/"
     resource_group_name         = azurerm_resource_group.resource_group.name
     location                    = azurerm_resource_group.resource_group.location
-    address_space               = var.address_space
+    address_space_lab           = var.address_space_lab
     address_space_management    = var.address_space_management
     networks                    = var.networks
     candidate_ip                = var.candidate_ip
     security_rules              = var.security_rules
-    candidate_network           = var.candidate_network
 }
 
 # ----------------------------------------------------------------------
@@ -70,31 +69,32 @@ module "dynamic_scaler" {
 # ----------------------------------------------------------------------
 # Include modules for all supported images
 # ----------------------------------------------------------------------
-module "windows_server_2016" {
-    source              = "./Microsoft/Windows/Server_2016"
+
+module "windows_server" {
+    source              = "./Microsoft/Windows/Server"
     location            = azurerm_resource_group.resource_group.location
     resource_group_name = azurerm_resource_group.resource_group.name
-    systems_map         = module.dynamic_scaler.microsoft_windows_server_2016_map
+    systems_map         = module.dynamic_scaler.microsoft_windows_server_map
     subnet_ids          = module.network.subnet_ids
     security_group_ids  = module.network.security_group_ids
     system_password     = random_password.system_password.result
 }
 
-module "windows_10" {
-    source              = "./Microsoft/Windows/10"
+module "windows_desktop" {
+    source              = "./Microsoft/Windows/Desktop"
     location            = azurerm_resource_group.resource_group.location
     resource_group_name = azurerm_resource_group.resource_group.name
-    systems_map         = module.dynamic_scaler.microsoft_windows_10_map
+    systems_map         = module.dynamic_scaler.microsoft_windows_desktop_map
     subnet_ids          = module.network.subnet_ids
     security_group_ids  = module.network.security_group_ids
     system_password     = random_password.system_password.result
 }
 
-module "ubuntu_20_04" {
-    source              = "./Canonical/Ubuntu/20.04/"
+module "ubuntu_server" {
+    source              = "./Canonical/Ubuntu/Server/"
     location            = azurerm_resource_group.resource_group.location
     resource_group_name = azurerm_resource_group.resource_group.name
-    systems_map         = module.dynamic_scaler.canonical_ubuntu_20_04_map
+    systems_map         = module.dynamic_scaler.canonical_ubuntu_server_map
     subnet_ids          = module.network.subnet_ids
     security_group_ids  = module.network.security_group_ids
     public_key          = fileexists("../../SSH-Keys/${var.public_key_file_management}") ? file("../../SSH-Keys/${var.public_key_file_management}") : module.management.public_key
@@ -120,9 +120,9 @@ module "kali" {
 module "ansible_inventory" {
     source          = "./Core/Ansible"
     features        = module.dynamic_scaler.features
-    system_details  = concat( module.windows_server_2016.details, 
-                            module.windows_10.details, 
-                            module.ubuntu_20_04.details,
+    system_details  = concat( module.windows_server.details,
+                            module.windows_desktop.details, 
+                            module.ubuntu_server.details,
                             module.kali.details )
 }
 
@@ -143,10 +143,11 @@ module "management_server" {
     security_group_ids          = module.network.security_group_ids
     ansible_inventory           = module.ansible_inventory.ansible_inventory_yml
     ansible_tags                = var.ansible_tags
+    ansible_limit               = var.ansible_limit
     force_ansible_redeploy      = var.force_ansible_redeploy
     assets_path                 = var.assets_path
-    depends_on                  = [ module.windows_server_2016, 
-                                    module.windows_10, 
-                                    module.ubuntu_20_04,
+    depends_on                  = [ module.windows_server, 
+                                    module.windows_desktop, 
+                                    module.ubuntu_server,
                                     module.kali ]
 }

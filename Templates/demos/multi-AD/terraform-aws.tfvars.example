@@ -6,96 +6,38 @@ AWS_REGION              = "eu-west-2"
 ############ / Attacker IP Range
 # Permitted to SSH and RDP to management network (ID 0) and candidate network (ID 1).
 candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
-candidate_network = 2
 
 ############ / SSH Key
 public_key_file_candidate    = "candidate_key.pub"
 private_key_file_candidate   = "candidate_key.pem"
 
+############ / Networking
+address_space_lab         = "10.1.0.0/16"
+address_space_management  = "10.1.254.0/24"
+
 networks = [
     {
         network_id    = "1"
         network_name  = "INTERNAL"
+        network_template = "internal_permissive"
         address_space = "10.1.1.0/24"
-    },
-    # !!! Internet Facing !!!
+    },    
     {
+        # Exposes RDP and SSH ports to the candidate IP ranges
         network_id    = "2"
         network_name  = "CANDIDATE_EXTERNAL"
+        network_template = "candidate"
         address_space = "10.1.2.0/24"
     }
 ]
 
 security_rules = [
-    {
-        network_id          = "1",
-        type                = "ingress",
-        cidr_blocks         = ["10.1.0.0/16"],
-        protocol            = "all",
-        from_port           = "0",
-        to_port             = "65535"
-    },
-    {
-        network_id          = "1",
-        type                = "ingress",
-        cidr_blocks         = ["10.1.0.0/16"],
-        protocol            = "icmp",
-        from_port           = "-1",
-        to_port             = "-1"
-    },
-    {
-        network_id          = "1",
-        type                = "egress",
-        cidr_blocks         = ["0.0.0.0/0"],
-        protocol            = "all",
-        from_port           = "0",
-        to_port             = "65535"
-    },
-    {
-        network_id          = "1",
-        type                = "egress",
-        cidr_blocks         = ["0.0.0.0/0"],
-        protocol            = "icmp",
-        from_port           = "-1",
-        to_port             = "-1"
-    },
-    {
-        network_id          = "2",
-        type                = "ingress",
-        cidr_blocks         = ["10.1.0.0/16"],
-        protocol            = "all",
-        from_port           = "0",
-        to_port             = "65535"
-    },
-    {
-        network_id          = "2",
-        type                = "ingress",
-        cidr_blocks         = ["10.1.0.0/16"],
-        protocol            = "icmp",
-        from_port           = "-1",
-        to_port             = "-1"
-    },
-    {
-        network_id          = "2",
-        type                = "egress",
-        cidr_blocks         = ["0.0.0.0/0"],
-        protocol            = "all",
-        from_port           = "0",
-        to_port             = "65535"
-    },
-    {
-        network_id          = "2",
-        type                = "egress",
-        cidr_blocks         = ["0.0.0.0/0"],
-        protocol            = "icmp",
-        from_port           = "-1",
-        to_port             = "-1"
-    }
 ]
 
 systems = [
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
         size        = "t2.medium"
         network_id  = "1"
         hostname    = null
@@ -112,6 +54,14 @@ systems = [
                 ]
             },
             {
+                name = "AD_User"
+                value = [ {name = "HighPriv", password = "TheSkyIsTheLimit.2022?"} ]
+            },
+            {
+                name = "AD_Group_Membership"
+                value = [{name = "Enterprise Admins", value = "HighPriv"}]
+            },
+            {
                 name = "AD_SecEdit_Access"
                 value = [
                     {name = "MinimumPasswordAge", value = "0"},
@@ -123,7 +73,8 @@ systems = [
         ]
     },
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
         size        = "t2.medium"
         network_id  = "1"
         hostname    = null
@@ -142,6 +93,10 @@ systems = [
                 ]
             },
             {
+                name = "AD_User"
+                value = [{name = "LowPriv", password = "Sup3rSecretString.2021!"}]
+            },
+            {
                 name = "AD_SecEdit_Access"
                 value = [
                     {name = "MinimumPasswordAge", value = "0"},
@@ -153,7 +108,8 @@ systems = [
         ]
     },
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2022"
         size        = "t2.small"
         network_id  = "2"
         hostname    = null
@@ -168,10 +124,6 @@ systems = [
                     {name = "domain_name", value = "alfa.dynamic.lab"},
                     {name = "domain_dns_server", value = "10.1.1.11"},
                 ]
-            },
-            {
-                name = "AD_User"
-                value = [{name = "LowPriv", password = "Sup3rSecretString.2021!"}]
             },
             {
                 name = "Win_Group_Membership"

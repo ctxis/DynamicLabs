@@ -1,57 +1,61 @@
-**WARNING: This project spins up intentionally vulnerable systems. Users spinning up their own labs using this code risk exposure at their own risk. After deployment, please test that the lab is not Internet-exposed.**
+# ![Dynamic Labs](Documentation/images/logo_name_128.png)
 
-# DynamicLabs
-v0.99 (beta)
+> **DISCLAIMER**
+>
+> **Dynamic Labs deploys INTENTIONALLY VULNERABLE SYSTEMS. Use at your own risk. Although the code implements controls to reduce the likelihood of users inadvertently publicly exposing vulnerable systems, after deployment please ensure that the lab systems are not Internet-exposed. Always use a restrictive IP range in the ``candidate_ip`` configuration variable**
 
-## Setup
-0. Download the project from https://github.com/ctxis/DynamicLabs.
-1. Download the latest version of Terraform. (Last tested on v0.15.4)
-   Windows: https://releases.hashicorp.com/terraform/0.15.4/terraform_0.15.4_windows_amd64.zip
-   Linux: https://releases.hashicorp.com/terraform/0.15.4/terraform_0.15.4_linux_amd64.zip
-2. (Optional) Install Terraform into your system path or /bin appropriately.
-3. Select what template you want to deploy (from the /Templates directory). Alfa is a basic template that conists of an AD setup with basic weaknesses like Kerberoasting and MSA abuse.
+## Overview
 
+Creating lab environments for testing and learning red teaming/simulated attack techniques can be hard and time consuming.
 
-## AWS Deployment
-0. Ensure that your current directory is set to dynamic labs.
-1. Create a new terraform workspace. (Use a short workspace name like 'DL1' upto 6 characters).
-```terraform -chdir="./Terraform/AWS" workspace new <name>```
-2. Initiate Terraform modules.
-```terraform -chdir="./Terraform/AWS" init```
-3. Clone the desired template's example file. 
-```I.e. "./Templates/<type>/<name>/terraform-AWS.tfvars.example" to "./Templates/<type>/<name>/terraform-AWS.tfvars"```
-```E.g. "copy ./Templates/demos/simple-AD/terraform-AWS.tfvars.example" to "./Templates/demos/simple-AD/terraform-AWS.tfvars"```
-4. Edit the file to add in your AWS connection details and your source network range.
-5. Begin deployment.
-```I.e. terraform -chdir="./Terraform/AWS" apply -var-file="../../Templates/<type>/<name>/terraform-aws.tfvars"```
-```E.g. terraform -chdir="./Terraform/AWS" apply -var-file="../../Templates/demos/simple-AD/terraform-aws.tfvars"```
-6. Deployment should take 10-30 minutes to complete depending on the specific template chosen.
-7. Once it completes, you can either SSH to Kali for the perspective of an unauthenticated internal network-based attacker, or the candidate system for an authenticated attacker that has compromised a low-privilege user. The Kali system uses the "ec2-user" and the candidate private SSH key. The Windows candidate system's credentials will be shown in Terraform output.
+Dynamic Labs is an open source tool aimed at red teamers and pentesters for the quick deployment of flexible, transient and cloud-hosted lab environments.
 
-## Azure Deployment
-0. Download and install Azure CLI (https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli).
-1. Type "az login" and authenticate into Azure.
-2. Ensure that your current directory is set to dynamic labs.
-3. Create a new terraform workspace. (Use a short workspace name like 'DL1' upto 6 characters).
-```terraform -chdir="./Terraform/Azure" workspace new <name>```
-4. Initiate Terraform modules.
-```terraform -chdir="./Terraform/Azure" init```
-5. Clone the desired template's example file. 
-```I.e. "./Templates/<type>/<name>/terraform-azure.tfvars.example" to "./Templates/<type>/<name>/terraform-azure.tfvars"```
-```E.g. "copy ./Templates/demos/simple-AD/terraform-azure.tfvars.example" to "./Templates/demos/simple-AD/terraform-azure.tfvars"```
-6. Edit the file to add in your source network range
-7. Begin deployment.
-```I.e. terraform -chdir="./Terraform/Azure" apply -var-file="../../Templates/<type>/<name>/terraform-azure.tfvars"```
-```E.g. terraform -chdir="./Terraform/Azure" apply -var-file="../../Templates/demos/simple-AD/terraform-azure.tfvars"```
-8. Deployment should take 20-40 minutes to complete depending on the specific template chosen.
-9. Once it completes, you can either SSH to Kali for the perspective of an unauthenticated internal network-based attacker, or the candidate system for an authenticated attacker that has compromised a low-privilege user. The Kali system uses the "ec2-user" and the candidate private SSH key. The Windows candidate system's credentials will be shown in Terraform output.
+Its simple configuration files abstract the complexities of building realistic corporate environments with common vulnerabilities.
 
-## Current Contributors
-- Rohan Durve (@Decode141)
-- David Turco (@endle__)
+For example, complex Active Directory multi-domain and multi-forest environments, user endpoints, Windows/Linux servers, databases, web applications, simple vulberabilities and convoluted attack paths can be deployed in minutes. 
 
-## Past Contributors
+Dynamic Labs ships with easily customisable lab templates, ready for deployment.
+
+## Use cases
+
+Dynamic Labs has been extensively tried and tested for the following use-cases:
+
+* **Simulated attack engagements** - effective red teamers test their toolchains against "digital twin" environments before deploying against real client systems, to make sure they work, evade known defences and don’t cause problems. Dynamic Labs can be used to deploy such environments, unique for each engagement.
+* **Self-education and research** - Pre-made lab templates can be deployed to learn specific attack techniques, e.g. kerberoasting. Instead, when a generic environment is needed for research purposes and for testing new techniques, Dynamic Labs can do the heavy lifting of deploying a typical environment (e.g. Active Directory forest) that can then be manually customised once deployed. A new lab template encompassing the customisations can then be created and shared for others to test, review and practice the same technique.
+* **Formal training courses** - Dynamic Labs allows the definition of lab environments to be used in training courses. The lab template needs to be defined once, and then mutliple instances of the training environment can be deployed when needed. This way, for example, each attendee can have a dedicated environment.
+
+## Usage
+
+To deploy a lab, follow the [Lab Deployment Instructions](Documentation/lab_deployment.md)
+
+## Lab Templates
+
+The list and description of the available lab templates, as shipped with Dynamic Labs, can be found at [Lab Templates](Documentation/lab_templates.md)
+
+Documentation on how to modify or create new lab templates is available at [Template Development](Documentation/template_development.md)
+
+## Contributing
+
+We accept pull requests for lab templates to be included by default with the community version of Dynamic Labs.
+
+If you are interested in implementing new core features or bug fixes, refer to the [Development Documentation](Documentation/development.md)
+
+## Roadmap
+
+In no specific order:
+
+* Increase the number of lab templates shipped with the community version
+* Simplify the definition of custom network security rules in lab templates
+* Increase the [supported system features](Documentation/system_features.md) for Linux and Windows
+* Implement support for Google Cloud Platform
+
+## Current Maintainer
+- David Turco ([@endle__](https://twitter.com/endle__))
+
+## Contributors
+Curent:
+- Rohan Durve ([@Decode141](https://twitter.com/Decode141))
+
+Past:
 - Alex Bourla
 - Dominik Schelle
-
-**WARNING: This project spins up intentionally vulnerable systems. Users spinning up their own labs using this code risk exposure at their own risk. After deployment, please test that the lab is not Internet-exposed.**

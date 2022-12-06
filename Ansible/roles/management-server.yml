@@ -12,10 +12,16 @@
         - nginx
         - pass
         - python3-pip
+        - jq
     - name: start nginx
       service:
         name: nginx
         state: started
+    - name: copy nginx management webroot
+      copy:
+        remote_src: yes
+        src: /home/ubuntu/www/
+        dest: /var/www/management/
     - name: copy nginx configuration
       copy:
         remote_src: yes

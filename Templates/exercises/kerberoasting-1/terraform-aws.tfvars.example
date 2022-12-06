@@ -13,28 +13,24 @@ public_key_file_management   = "management_key.pub"
 private_key_file_management  = "management_key.pem"
 
 ############ / Networking
-address_space_vpc         = "10.1.0.0/16"
-address_space_management  = "10.1.254.0/24"  #Tier M
+address_space_lab         = "10.1.0.0/16"
+address_space_management  = "10.1.254.0/24"
 
 networks = [
     {
-        network_id    = "0"
-        network_name  = "MANAGEMENT"
-        address_space = "10.1.254.0/24"
-    },
-    {
         network_id    = "1"
         network_name  = "INTERNAL"
+        network_template = "internal_permissive"
         address_space = "10.1.1.0/24"
-    },
-    # !!! Internet Facing !!!
+    },    
     {
+        # Exposes RDP and SSH ports to the candidate IP ranges
         network_id    = "2"
-        network_name  = "EXTERNAL"
+        network_name  = "CANDIDATE_EXTERNAL"
+        network_template = "candidate"
         address_space = "10.1.2.0/24"
     }
 ]
-
 
 ############ / Server Instance Details
 managment_server_network_id = "0"
@@ -42,7 +38,8 @@ management_server_private_ip = "10.1.254.10"
 
 systems = [
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2016"
         size        = "t2.medium"
         network_id  = "1"
         private_ip  = "10.1.1.10"
@@ -90,7 +87,8 @@ systems = [
         ]
     },
     {
-        module      = "microsoft_windows_server_2016"
+        module      = "microsoft_windows_server"
+        os_version  = "2016"
         size        = "t2.medium"
         network_id  = "2"
         private_ip  = null

@@ -24,6 +24,11 @@ variable "ansible_tags" {
     default = "all"
 }
 
+variable "ansible_limit" {
+    description = "Limit execution of ansible to specified hosts. Useful during development to apply changes to a specific host only"
+    default = "all"
+}
+
 variable "assets_path" {
     description = "The location on the local filesystem of assets to copy to the management server"
     type = string

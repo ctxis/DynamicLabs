@@ -1,0 +1,69 @@
+########### / Location
+location = "uksouth"
+
+############ / Attacker IP Range
+candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
+
+############ / SSH Key
+public_key_file_candidate    = "candidate_key.pub"
+private_key_file_candidate   = "candidate_key.pem"
+
+############ / Networking
+address_space_lab         = "10.1.0.0/16"
+address_space_management  = "10.1.254.0/24"
+
+networks = [
+    {
+        # Exposes RDP and SSH ports to the candidate IP ranges
+        network_id    = "1"
+        network_name  = "CANDIDATE_EXTERNAL"
+        network_template = "candidate"
+        address_space = "10.1.1.0/24"
+    }
+]
+
+security_rules = [
+]
+
+############ / Assets
+assets_path = "Templates/demos/standalone-ubuntu-server/assets/"
+
+############ / Systems
+systems = [
+    {
+        module      = "canonical_ubuntu_server"
+        os_version  = "22.04"
+        size        = "Standard_B1ms"
+        network_id  = "1"
+        hostname    = null
+        private_ip  = null
+        public_ip   = true
+        class       = "GS"
+        id          = "01"
+        features    = [
+            {
+                name = "Linux_User"
+                value = [
+                    # Login with the SSH keys inside the assets directory
+                    { name = "highpriv", groups = "admin" },
+                    { name = "lowpriv" }
+                ]
+            },
+            {
+                name = "Linux_Authorized_Keys"
+                value = [
+                    { 
+                       user = "lowpriv",
+                       type = "asset",
+                       key_path = "lowpriv_id_rsa.pub"
+                    },
+                    { 
+                       user = "highpriv",
+                       type = "asset",
+                       key_path = "highpriv_id_rsa.pub"
+                    },
+                ]
+            }
+        ]
+    }
+]

@@ -9,10 +9,10 @@
     - "{{ AD_Join.domain_dns_server }}"
     log_path: C:\dns_log.txt
 
-- name: Install RSAT to join domain when OS is Windows 10
+- name: Install RSAT to join domain when OS is Windows 10/11
   win_shell: |
     Get-WindowsCapability -Name Rsat.ServerManager.Tools* -Online | Add-WindowsCapability -Online
-  when: not ansible_windows_domain_member and hostvars[inventory_hostname].ansible_distribution.startswith('Microsoft Windows 10')
+  when: not ansible_windows_domain_member and (hostvars[inventory_hostname].ansible_os_installation_type == "Client")
   vars:
     ansible_become: yes
     ansible_become_method: runas
@@ -20,7 +20,7 @@
     ansible_become_password: "{{ ansible_password }}"
 - win_feature:
     name: RSAT-AD-PowerShell
-  when: not hostvars[inventory_hostname].ansible_distribution.startswith('Microsoft Windows 10')
+  when: not (hostvars[inventory_hostname].ansible_os_installation_type == "Client")
 - name: Joining system(s) to domain.
   win_domain_membership:
     dns_domain_name: "{{ AD_Join.domain_name }}"
@@ -35,8 +35,3 @@
     post_reboot_delay: 60
     reboot_timeout: 900
   when: domain_state.reboot_required
-- set_fact:
-    ansible_winrm_transport: ntlm
-    ansible_domain: "{{ AD_Join.domain_name }}"
-    ansible_user: "{{ ansible_user + '@' + AD_Join.domain_name }}"
-    ansible_password: "{{ ansible_password }}"

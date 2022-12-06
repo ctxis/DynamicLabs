@@ -6,7 +6,7 @@ locals {
             ]
         ]))
 
-    microsoft_windows_server_2016_systems = [
+    microsoft_windows_server_systems = [
         for system in var.systems : merge(
                 system,
                 {
@@ -14,15 +14,15 @@ locals {
                     "features" = "${system["features"]}",
                 }
             )
-        if system["module"] == "microsoft_windows_server_2016"
+        if system["module"] == "microsoft_windows_server"
     ]
 
-    microsoft_windows_server_2016_map = {
-        for system in local.microsoft_windows_server_2016_systems :
+    microsoft_windows_server_map = {
+        for system in local.microsoft_windows_server_systems :
             "${system["name"]}" => system
     }
 
-    microsoft_windows_10_systems = [
+    microsoft_windows_desktop_systems = [
         for system in var.systems : merge(
                 system,
                 {
@@ -30,15 +30,15 @@ locals {
                     "features" = "${system["features"]}",
                 }
             )
-        if system["module"] == "microsoft_windows_10"
+        if system["module"] == "microsoft_windows_desktop"
     ]
 
-    microsoft_windows_10_map = {
-        for system in local.microsoft_windows_10_systems :
+    microsoft_windows_desktop_map = {
+        for system in local.microsoft_windows_desktop_systems :
             "${system["name"]}" => system
     }
 
-    canonical_ubuntu_20_04_systems = [
+    canonical_ubuntu_server_systems = [
         for system in var.systems : merge(
                 system,
                 {
@@ -46,11 +46,11 @@ locals {
                     "features" = "${system["features"]}",
                 }
             )
-        if system["module"] == "canonical_ubuntu_20_04"
+        if system["module"] == "canonical_ubuntu_server"
     ]
 
-    canonical_ubuntu_20_04_map = {
-        for system in local.canonical_ubuntu_20_04_systems :
+    canonical_ubuntu_server_map = {
+        for system in local.canonical_ubuntu_server_systems :
             "${system["name"]}" => system
     }
 

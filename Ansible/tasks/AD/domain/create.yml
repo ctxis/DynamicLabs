@@ -1,3 +1,28 @@
+---
+# 
+# Creates a new Active Directory domain in an existing forest, promoting the system to domain controller for the new domain
+# 
+# Parameters:
+# domain_parent_name = the fully qualified dns name of the parent domain, e.g. dynamic.lab
+# domain_dns_server = the IP address of the DNS server for the parent domain. Usally this is the domain controller created with AD_Forest/AD_Domain
+# domain_name = subdomain part of the dns name for the domain to be created, e.g. alfa (this will also be the NetBIOS name)
+# domain_type = relationship with the parent domain name. Usually ChildDomain
+#
+# Notes:
+# Systems with the AD_Forest feature should always have a static IP assigned.
+# 
+# Examples:
+#            {
+#                name = "AD_Domain"
+#                value = [
+#                    {name = "domain_parent_name", value = "dynamic.lab"},
+#                    {name = "domain_dns_server", value = "10.1.1.10"},
+#                    {name = "domain_name", value = "alfa"},
+#                    {name = "domain_type", value = "ChildDomain"}
+#                ]
+#            }
+#
+
 - set_fact:
     AD_Domain: "{{ AD_Domain | default({}) | combine({item.name: item.value}) }}"
   with_items:
@@ -51,11 +76,3 @@
   until: command_result.rc == 0
   retries: 180
   delay: 10
-- set_fact:
-    ansible_winrm_transport: ntlm
-    ansible_domain: "{{ AD_Domain.domain_name }}"
-    ansible_user: "{{ ansible_user }}"
-    ansible_password: "{{ ansible_password }}"
-- win_feature:
-    name: Windows-Defender
-    state: absent
