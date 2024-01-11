@@ -3,7 +3,7 @@ data "aws_ami" "kali" {
     most_recent = true
     filter {
         name   = "name"
-        values = ["kali-linux-*"]
+        values = ["kali-last-snapshot-amd64*"]
     }
     filter {
         name   = "virtualization-type"

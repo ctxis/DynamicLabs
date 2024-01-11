@@ -2,7 +2,7 @@
 #
 # path - path of directory to create
 # owner - optional, the user owning the directory (default is root)
-# group - the group owning the directory (optional, default is root)
+# group - the group owning the directory (optional, default is 0 i.e. root/wheel depending on OS)
 # mode - optional, the unix permissions on the directory in chmod sytle
 #
 # Example:
@@ -18,7 +18,7 @@
     path: "{{ item.path }}"
     state: directory
     owner: "{{ item.owner | default('root') }}" 
-    group: "{{ item.group | default('root') }}" 
+    group: "{{ item.group | default('0') }}" 
 
 - file:
     path: "{{ item.path }}"

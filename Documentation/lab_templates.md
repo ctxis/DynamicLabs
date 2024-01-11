@@ -30,7 +30,10 @@ The default lab templates shipped with Dynamic Labs are located in the ``Templat
 | standalone-windows-workstation | Single standalone Windows Worstation | Azure | none |
 | standalone-kali-linux | Single Kali-Linux host | AWS, Azure | Requires accepting the Kali AWS/Azure Marketplace license as a pre-requisite |
 | standalone-ubuntu-server | Single Ubuntu host | AWS, Azure | none |
+| standalone-macos | Single MacOS host | AWS | See [Using macOS instances with AWS](aws_macos_instances.md) |
 
 ## Training
+
+*Not available in the community version.*
 
 Refer to the individual templates in the ``Templates\training\`` directory.

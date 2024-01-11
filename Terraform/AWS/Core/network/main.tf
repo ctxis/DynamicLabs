@@ -7,6 +7,10 @@ locals {
     }
 }
 
+locals {
+    availability_zone = "${var.AWS_REGION}${var.AWS_AVAILABILITY_ZONE_ABC}"
+}
+
 resource "aws_vpc" "vpc" {
     cidr_block            = var.address_space_lab
     enable_dns_support    = true
@@ -27,6 +31,7 @@ resource "aws_subnet" "subnet_config" {
     for_each = local.networks
     vpc_id                  = aws_vpc.vpc.id
     cidr_block              = each.value["address_space"]
+    availability_zone       = local.availability_zone
     tags = {
         Name = "${terraform.workspace}-${each.value["network_id"]}"
     }

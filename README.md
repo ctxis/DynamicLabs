@@ -16,6 +16,10 @@ For example, complex Active Directory multi-domain and multi-forest environments
 
 Dynamic Labs ships with easily customisable lab templates, ready for deployment.
 
+The [BlackHat EU 2022 - Lab Environments for Red Teamers with Dynamic Labs](Documentation/BlackHat%20EU%202022%20-%20Lab%20Environments%20for%20Red%20Teamers%20with%20Dynamic%20Labs_v1.pdf) presentation slides provide an introduction to Dynamic Labs.
+
+Additional documentation is available at [Documentation](Documentation/).
+
 ## Use cases
 
 Dynamic Labs has been extensively tried and tested for the following use-cases:
@@ -53,7 +57,7 @@ In no specific order:
 - David Turco ([@endle__](https://twitter.com/endle__))
 
 ## Contributors
-Curent:
+Current:
 - Rohan Durve ([@Decode141](https://twitter.com/Decode141))
 
 Past:

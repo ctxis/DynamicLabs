@@ -22,9 +22,10 @@ EOF
 
 output "Management_Credentials" {
     value = {
-        "Management Username" = "ubuntu"
-        "Management SSH Key" = "../../SSH-Keys/${terraform.workspace}-management_key.pem"
-        "Management Windows Username" = "ansible"
+        "Management Ubuntu Username" = "ubuntu"
+        "Management macOS Username" = "ec2-user"
+        "Management Ubuntu/macOS SSH Key" = "../../SSH-Keys/${terraform.workspace}-management_key.pem"
+        "Management Windows Username" = "administrator"
         "Management Windows Password" = nonsensitive(random_password.system_password.result)
     }
 }

@@ -1,0 +1,82 @@
+############ / AWS Credentials
+AWS_ACCESS_KEY          = ""
+AWS_SECRET_KEY          = ""
+AWS_REGION              = "eu-west-1" # Make sure the region offers mac1 and/or mac2 instances
+
+############ / Attacker IP Range
+# Permitted to SSH and RDP to management network (ID 0) and candidate network (ID 1).
+candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
+
+############ / SSH Key
+public_key_file_candidate    = "candidate_key.pub"
+private_key_file_candidate    = "candidate_key.pem"
+
+############ / Networking
+address_space_lab         = "10.1.0.0/16"
+address_space_management  = "10.1.254.0/24"
+
+networks = [
+    {
+        # Exposes RDP and SSH ports to the candidate IP ranges
+        network_id    = "1"
+        network_name  = "CANDIDATE_EXTERNAL"
+        network_template = "candidate"
+        address_space = "10.1.1.0/24"
+    }
+]
+
+security_rules = [
+]
+
+############ / Assets
+assets_path = "Templates/demos/standalone-macos/assets/"
+
+############ / Systems
+systems = [
+    {
+        module            = "apple_macos_arm64"
+        os_version        = "sonoma"
+        size              = "mac2.metal"
+        network_id        = "1"
+        hostname          = null
+        private_ip        = null
+        public_ip         = true
+        class             = "OSX"
+        id                = "01"
+        dedicated_host_id = "h-xxxxxxxxxxxxxxxxx" # Update with the host id of the manually created dedicated host 
+        features    = [
+            {
+                name = "MacOS_User"
+                value = [
+                    { name = "lowpriv", 
+                      password = "M4cInstancesAreExpens1ve$$$" },
+                    { name = "highpriv",
+                      password = "1CanManageThisMac!",
+                      groups = "admin" }
+                ]
+            },
+            {   
+                # To access the remote desktop redirect port 5900 via SSH, e.g.:
+                # > ssh -i assets/lowpriv_id_rsa lowpriv@x.x.x.x -L5900:localhost:5900
+                # Then connect to localhost port 5900 using an Apple Remote Desktop compatible VNC client
+                name = "MacOS_Remote_Desktop",
+                value = [ ]
+            },
+            {
+                name = "MacOS_Authorized_Keys"
+                value = [
+                    { 
+                       user = "lowpriv",
+                       type = "asset",
+                       key_path = "lowpriv_id_rsa.pub"
+                    },
+                    { 
+                       user = "highpriv",
+                       type = "asset",
+                       key_path = "highpriv_id_rsa.pub"
+                    },
+                ]
+            }
+        ]
+    }
+]

@@ -263,16 +263,31 @@ The recommended sizes to use in templates to keep the running costs of lab conta
 
 The following table shows the list of supported Operating Systems for each supported cloud platform.
 
-| Operating System    | Module Name                 | OS Version | AWS | Azure |
-|---------------------|-----------------------------|------------|-----|-------|
-| Windows Server 2016 | microsoft_windows_server    | 2016       | X   | X     |
-| Windows Server 2019 | microsoft_windows_server    | 2019       | X   | X     |
-| Windows Server 2022 | microsoft_windows_server    | 2022       | X   | X     |
-| Windows 10 (21H2)   | microsoft_windows_desktop   | 10         |     | X     |
-| Windows 11 (22H2)   | microsoft_windows_desktop   | 11         |     | X     |
-| Ubuntu Server 20.04 | canonical_ubuntu_server     | 20.04      | X   | X     |
-| Ubuntu Server 22.04 | canonical_ubuntu_server     | 22.04      | X   | X     |
-| Kali Linux (latest) | offensivesecurity_kalilinux | latest     | X   | X     |
+| Operating System      | Module Name                 | OS Version | AWS | Azure |
+|-----------------------|-----------------------------|------------|-----|-------|
+| Windows Server 2016   | microsoft_windows_server    | 2016       | X   | X     |
+| Windows Server 2019   | microsoft_windows_server    | 2019       | X   | X     |
+| Windows Server 2022   | microsoft_windows_server    | 2022       | X   | X     |
+| Windows 10 (21H2)     | microsoft_windows_desktop   | 10         |     | X     |
+| Windows 11 (22H2)     | microsoft_windows_desktop   | 11         |     | X     |
+| Ubuntu Server 20.04   | canonical_ubuntu_server     | 20.04      | X   | X     |
+| Ubuntu Server 22.04   | canonical_ubuntu_server     | 22.04      | X   | X     |
+| Kali Linux (latest)   | offensivesecurity_kalilinux | latest     | X   |       |
+| Kali Linux (various*) | offensivesecurity_kalilinux | various*   |     | X     |
+| MacOS (x86_64)        | apple_macos_x86_64          | bigsur     | X   |       |
+| MacOS (x86_64)        | apple_macos_x86_64          | monterey   | X   |       |
+| MacOS (x86_64)        | apple_macos_x86_64          | ventura    | X   |       |
+| MacOS (x86_64)        | apple_macos_x86_64          | sonoma     | X   |       |
+| MacOS (arm64)         | apple_macos_arm64           | bigsur     | X   |       |
+| MacOS (arm64)         | apple_macos_arm64           | monterey   | X   |       |
+| MacOS (arm64)         | apple_macos_arm64           | ventura    | X   |       |
+| MacOS (arm64)         | apple_macos_arm64           | sonoma     | X   |       |
+
+\* At any given time, Kali linux versions available on Azure are limited to the most recent versions.
+Kali releases are listed here https://www.kali.org/releases/ and the ones available on Azure can be found at https://azuremarketplace.microsoft.com/en-gb/marketplace/apps/kali-linux.kali?tab=PlansAndPrice. Versions in the templates are specified as YYYY-X, e.g. `2023-4`.
+
+
+**MacOS deployment has important limitations and cost implications**. Refer to the [Using macOS instances with AWS](aws_macos_instances.md) page for deployment instructions.
 
 ## System features
 

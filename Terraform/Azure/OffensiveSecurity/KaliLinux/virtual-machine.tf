@@ -31,12 +31,12 @@ resource "azurerm_virtual_machine" "kali" {
     storage_image_reference {
         publisher = "kali-linux"
         offer     = "kali"
-        sku       = "kali"
+        sku       = "kali-${each.value["os_version"]}"
         version   = "latest"
     }
 
     plan {
-        name      = "kali"
+        name      = "kali-${each.value["os_version"]}"
         publisher = "kali-linux"
         product   = "kali"
     }

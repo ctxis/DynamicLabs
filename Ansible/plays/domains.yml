@@ -15,6 +15,10 @@
   tags: AD_Join
   tasks:
   - include_tasks: ../tasks/AD/join.yml
+- hosts: AD_Join_MacOS
+  tags: AD_Join_MacOS
+  tasks:
+  - include_tasks: ../tasks/AD/join_macos.yml
 - hosts: AD_DNS_Forwarder_Zone
   tags: AD_DNS_Forwarder_Zone
   tasks:
