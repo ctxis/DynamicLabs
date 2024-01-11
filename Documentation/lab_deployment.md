@@ -25,7 +25,7 @@ Dynamic Labs has been tested on both Linux and Windows. It's likely to work on o
 1. Choose a lab template to deploy (from the [Templates](Templates) directory). For example, Alfa is a basic template that conists of an AD setup with basic weaknesses like Kerberoasting and MSA abuse.
 
 ### Terms and Conditions for specific images
-When using lab templates that include images from AWS or Azure Marketplace, such as Kali Linux, accept their respective terms and conditions.
+When using lab templates that include images from AWS or Azure Marketplace, such as Kali Linux, accept their respective terms and conditions, if required.
 
 For example, for Kali Linux instances, accept the terms and conditions at:
 

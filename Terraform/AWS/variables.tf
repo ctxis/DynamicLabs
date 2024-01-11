@@ -1,7 +1,13 @@
 variable "AWS_ACCESS_KEY" {}
 variable "AWS_SECRET_KEY" {}
 variable "AWS_REGION" {
-    default = "eu-west-2"
+    default = "eu-west-1"
+}
+
+variable "AWS_AVAILABILITY_ZONE_ABC" {
+    # The last letter of the availability zone.
+    # e.g. for eu-west-1a that would be "a"
+    default = "a"
 }
 
 variable address_space_lab {
@@ -61,6 +67,7 @@ variable "systems" {
         module=string,
         os_version=string,
         size=string,
+        dedicated_host_id=optional(string),
         network_id=string,
         hostname=string,
         private_ip=string,

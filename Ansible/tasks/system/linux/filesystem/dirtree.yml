@@ -3,8 +3,8 @@
 # Parameters:
 # path - path of the destination (a slash at the end of the path matters!!!)
 # asset - the item (directory/file) to copy on the remote system (a slash at the end of the path matters!!!)
-# owner - (optional) the user owning the files/directories (optional, default is SYSTEM)
-# group - (optional) the group owning the files/directories (optional, default is SYSTEM)
+# owner - (optional) the user owning the files/directories (optional, default is root)
+# group - (optional) the group owning the files/directories (optional, default is 0 i.e. root/wheel depending on OS)
 # mode - (optional) the unix permissions on the files in chmod sytle
 # directory_mode - (optional) the unix permissions on the directories in chmod sytle
 
@@ -33,14 +33,14 @@
     dest: "{{ item.path }}"
     src: "~/assets/{{ item.asset }}"
     owner: "{{ item.owner | default('root') }}" 
-    group: "{{ item.group | default('root') }}" 
+    group: "{{ item.group | default('0') }}" 
   when: item.mode is not defined and item.directory_mode is not defined
 
 - copy:
     dest: "{{ item.path }}"
     src: "~/assets/{{ item.asset }}"
     owner: "{{ item.owner | default('root') }}" 
-    group: "{{ item.group | default('root') }}" 
+    group: "{{ item.group | default('0') }}" 
     mode: "{{ item.mode }}"
   when: item.mode is defined and item.directory_mode is not defined
 
@@ -48,7 +48,7 @@
     dest: "{{ item.path }}"
     src: "~/assets/{{ item.asset }}"
     owner: "{{ item.owner | default('root') }}" 
-    group: "{{ item.group | default('root') }}" 
+    group: "{{ item.group | default('0') }}" 
     directory_mode: "{{ item.directory_mode }}"
   when: item.mode is not defined and item.directory_mode is defined
 
@@ -56,7 +56,7 @@
     dest: "{{ item.path }}"
     src: "~/assets/{{ item.asset }}"
     owner: "{{ item.owner | default('root') }}" 
-    group: "{{ item.group | default('root') }}" 
+    group: "{{ item.group | default('0') }}" 
     mode: "{{ item.mode }}"
     directory_mode: "{{ item.directory_mode }}"
   when: item.mode is defined and item.directory_mode is defined

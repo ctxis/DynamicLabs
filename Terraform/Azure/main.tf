@@ -70,7 +70,12 @@ module "dynamic_scaler" {
 # Include modules for all supported images
 # ----------------------------------------------------------------------
 
+# `count` is used to dynamically load modules depending on whether the system is defined
+# in the lab template. For example this will prevent errors related to missing Kali images
+# when deploying to regions that do not support Kali linux
+
 module "windows_server" {
+    count = length(module.dynamic_scaler.microsoft_windows_server_map) == 0 ? 0 : 1
     source              = "./Microsoft/Windows/Server"
     location            = azurerm_resource_group.resource_group.location
     resource_group_name = azurerm_resource_group.resource_group.name
@@ -81,6 +86,7 @@ module "windows_server" {
 }
 
 module "windows_desktop" {
+    count = length(module.dynamic_scaler.microsoft_windows_desktop_map) == 0 ? 0 : 1
     source              = "./Microsoft/Windows/Desktop"
     location            = azurerm_resource_group.resource_group.location
     resource_group_name = azurerm_resource_group.resource_group.name
@@ -91,6 +97,7 @@ module "windows_desktop" {
 }
 
 module "ubuntu_server" {
+    count = length(module.dynamic_scaler.canonical_ubuntu_server_map) == 0 ? 0 : 1
     source              = "./Canonical/Ubuntu/Server/"
     location            = azurerm_resource_group.resource_group.location
     resource_group_name = azurerm_resource_group.resource_group.name
@@ -103,6 +110,7 @@ module "ubuntu_server" {
 }
 
 module "kali" {
+    count = length(module.dynamic_scaler.offensivesecurity_kalilinux_map) == 0 ? 0 : 1
     source              = "./OffensiveSecurity/KaliLinux"
     location            = azurerm_resource_group.resource_group.location
     resource_group_name = azurerm_resource_group.resource_group.name
@@ -120,10 +128,10 @@ module "kali" {
 module "ansible_inventory" {
     source          = "./Core/Ansible"
     features        = module.dynamic_scaler.features
-    system_details  = concat( module.windows_server.details,
-                            module.windows_desktop.details, 
-                            module.ubuntu_server.details,
-                            module.kali.details )
+    system_details  = concat( try(module.windows_server[0].details, []), 
+                            try(module.windows_desktop[0].details,  []), 
+                            try(module.ubuntu_server[0].details, []), 
+                            try(module.kali[0].details, []))
 }
 
 # ----------------------------------------------------------------------

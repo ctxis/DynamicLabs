@@ -39,3 +39,9 @@
     - name: pip3 install "pywinrm>=0.3.0"
       pip:
         name: pywinrm>=0.3.0
+    - name: Create credentials directory
+      file:
+        path: /home/ubuntu/credentials
+        state: directory
+        owner: ubuntu
+        group: ubuntu

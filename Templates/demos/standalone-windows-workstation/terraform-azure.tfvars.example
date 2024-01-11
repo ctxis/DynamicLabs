@@ -3,7 +3,6 @@ location = "uksouth"
 
 ############ / Attacker IP Range
 candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
-candidate_network = 1
 
 ############ / SSH Key
 public_key_file_candidate    = "candidate_key.pub"

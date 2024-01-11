@@ -43,6 +43,13 @@
 #
 # 
 
+# Chocolatey v2 requires .NET Framework 4.8, which is not installed by default on older versions of Windows.
+# Let's stick to 1.4.0 for the time being
+- win_chocolatey:
+    name: 'chocolatey'
+    state: present
+    version: '1.4.0'
+
 - win_chocolatey:
     name: sql-server-express
     state: present
@@ -136,7 +143,7 @@
       $db_user_exists = get-sqllogin -ServerInstance $db_instance | where {$_.Name -eq "{{ item.sysadmin }}"}
       if (! $db_user_exists) {
         add-sqllogin -ServerInstance $db_instance -LoginName "{{ item.sysadmin }}" -LoginType "WindowsUser" -DefaultDatabase "Master" -Enable  -GrantConnectSql
-        invoke-sqlcmd -serverinstance $db_instance "EXEC sp_addsrvrolemember '{{ item.sysadmin }}','sysadmin'; "
+        invoke-sqlcmd -TrustServerCertificate -serverinstance $db_instance "EXEC sp_addsrvrolemember '{{ item.sysadmin }}','sysadmin'; "
       }
   when: item.sysadmin is defined
 
@@ -165,7 +172,7 @@
     $db_owner_exists = get-sqllogin -ServerInstance $db_instance | where {$_.Name -eq "{{ item.db_owner }}"}
     if (! $db_owner_exists ) {
       add-sqllogin -ServerInstance $db_instance -LoginName "{{ item.db_owner }}" -LoginType "WindowsUser" -DefaultDatabase "Master" -Enable  -GrantConnectSql
-      invoke-sqlcmd -serverinstance $db_instance "use {{ item.db_name }}; EXEC sp_adduser '{{ item.db_owner }}', '{{ item.db_owner }}', 'db_owner';"
+      invoke-sqlcmd -TrustServerCertificate -serverinstance $db_instance "use {{ item.db_name }}; EXEC sp_adduser '{{ item.db_owner }}', '{{ item.db_owner }}', 'db_owner';"
     }
   when: (item.db_name is defined) and (item.db_owner is defined)
 
@@ -178,7 +185,7 @@
 - name: Run DB SQL Init Script
   win_shell: | 
       $db_instance = ${env:COMPUTERNAME}
-      invoke-sqlcmd -serverinstance $db_instance -database "{{ item.db_name }}" -InputFile "c:\windows\temp\{{ item.db_name }}_init.sql"
+      invoke-sqlcmd -TrustServerCertificate -serverinstance $db_instance -database "{{ item.db_name }}" -InputFile "c:\windows\temp\{{ item.db_name }}_init.sql"
   when: item.db_sql_script is defined
 
 - name: Delete TMP SQL file 

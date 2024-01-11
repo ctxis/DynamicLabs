@@ -19,7 +19,7 @@ resource "azurerm_network_security_rule" "security_group_rule_allow_all_inbound_
     for_each                        = local.networks
         resource_group_name             = var.resource_group_name
         network_security_group_name     = azurerm_network_security_group.security_group[each.value.network_id].name
-        name                            = "Allow All Inbound Traffic from Same Subnet"
+        name                            = "AllowAllInboundTrafficFromSameSubnet"
         priority                        = 4094
         direction                       = "Inbound"
         access                          = "Allow"
@@ -34,7 +34,7 @@ resource "azurerm_network_security_rule" "security_group_rule_allow_all_inbound_
     for_each                        = local.networks
         resource_group_name             = var.resource_group_name
         network_security_group_name     = azurerm_network_security_group.security_group[each.value.network_id].name
-        name                            = "Allow All Inbound Traffic from Management"
+        name                            = "AllowAllInboundTrafficFromManagement"
         priority                        = 4095
         direction                       = "Inbound"
         access                          = "Allow"
@@ -50,7 +50,7 @@ resource "azurerm_network_security_rule" "security_group_rule_drop_all_inbound" 
     for_each                        = local.networks
         resource_group_name             = var.resource_group_name
         network_security_group_name     = azurerm_network_security_group.security_group[each.value.network_id].name
-        name                            = "Drop All Inbound Traffic"
+        name                            = "DropAllInboundTraffic"
         priority                        = 4096
         direction                       = "Inbound"
         access                          = "Deny"
@@ -67,7 +67,7 @@ resource "azurerm_network_security_rule" "security_group_rule_allow_virtualnetwo
     for_each                        = local.networks
         resource_group_name             = var.resource_group_name
         network_security_group_name     = azurerm_network_security_group.security_group[each.value.network_id].name
-        name                            = "Allow Outbound Traffic to Virtual Network"
+        name                            = "AllowOutboundTrafficToVirtualNetwork"
         priority                        = 4094
         direction                       = "Outbound"
         access                          = "Allow"
@@ -82,7 +82,7 @@ resource "azurerm_network_security_rule" "security_group_rule_allow_internet_out
     for_each                        = local.networks
         resource_group_name             = var.resource_group_name
         network_security_group_name     = azurerm_network_security_group.security_group[each.value.network_id].name
-        name                            = "Allow Outbound Traffic to the Internet"
+        name                            = "AllowOutboundTrafficToTheInternet"
         priority                        = 4095
         direction                       = "Outbound"
         access                          = "Allow"
@@ -98,7 +98,7 @@ resource "azurerm_network_security_rule" "security_group_rule_drop_all_outbound"
     for_each                        = local.networks
         resource_group_name             = var.resource_group_name
         network_security_group_name     = azurerm_network_security_group.security_group[each.value.network_id].name
-        name                            = "Drop All Outbound Traffic"
+        name                            = "DropAllOutboundTraffic"
         priority                        = 4096
         direction                       = "Outbound"
         access                          = "Deny"
@@ -121,7 +121,7 @@ locals {
 
 resource "azurerm_network_security_rule" "security_group_rule_allow_candidate_inbound_to_rdp_and_ssh" {
     for_each = local.candidate_networks
-        name                        = "Allow RDP and SSH from the Candidate A"
+        name                        = "AllowRDPAndSSHFromTheCandidateA"
         resource_group_name         = var.resource_group_name
         network_security_group_name = azurerm_network_security_group.security_group[each.value.network_id].name
         priority                    = 4000
@@ -149,7 +149,7 @@ resource "azurerm_network_security_rule" "security_group_rule_permissive_network
     for_each                        = local.internal_permissive_networks
         resource_group_name             = var.resource_group_name
         network_security_group_name     = azurerm_network_security_group.security_group[each.value.network_id].name
-        name                            = "Allow All Inbound Traffic from Virtual Network"
+        name                            = "AllowAllInboundTrafficFromVirtualNetwork"
         priority                        = 4000
         direction                       = "Inbound"
         access                          = "Allow"

@@ -3,6 +3,7 @@ variable "systems" {
         module=string,
         os_version=string,
         size=string,
+        dedicated_host_id=optional(string),
         network_id=string,
         hostname=string,
         private_ip=string,

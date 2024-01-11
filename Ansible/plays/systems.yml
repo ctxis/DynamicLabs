@@ -22,6 +22,11 @@
   tasks:
   - include_tasks: ../tasks/system/linux/user/create.yml
     loop: "{{ attributes_dict.Linux_User }}"
+- hosts: MacOS_User
+  tags: MacOS_User
+  tasks:
+  - include_tasks: ../tasks/system/macos/user/create.yml
+    loop: "{{ attributes_dict.MacOS_User }}"
 - hosts: Win_User_Password
   tags: Win_User_Password
   tasks:
@@ -32,11 +37,22 @@
   tasks:
   - include_tasks: ../tasks/system/linux/ssh/authorized_keys.yml
     loop: "{{ attributes_dict.Linux_Authorized_Keys }}"
+- hosts: MacOS_Authorized_Keys
+  tags: MacOS_Authorized_Keys
+  tasks:
+  # Reuse the Linux implementation
+  - include_tasks: ../tasks/system/linux/ssh/authorized_keys.yml
+    loop: "{{ attributes_dict.MacOS_Authorized_Keys }}"
 - hosts: Win_Group_Membership
   tags: Win_Group_Membership
   tasks:
   - include_tasks: ../tasks/system/windows/group/membership.yml
     loop: "{{ attributes_dict.Win_Group_Membership }}"
+- hosts: MacOS_Remote_Desktop
+  tags: MacOS_Remote_Desktop
+  tasks:
+  # Reuse the Linux implementation
+  - include_tasks: ../tasks/system/macos/remote_desktop/enable.yml
 - hosts: flag
   tags: flag
   tasks:
@@ -52,6 +68,12 @@
   tasks:
   - include_tasks: ../tasks/system/linux/filesystem/directory.yml
     loop: "{{ attributes_dict.Linux_Directory }}"
+- hosts: MacOS_Directory
+  tags: MacOS_Directory
+  tasks:
+  # Reuse the Linux implementation
+  - include_tasks: ../tasks/system/linux/filesystem/directory.yml
+    loop: "{{ attributes_dict.MacOS_Directory }}"
 - hosts: Win_Simple_File
   tags: Win_Simple_File
   tasks:
@@ -62,6 +84,13 @@
   tasks:
   - include_tasks: ../tasks/system/linux/filesystem/simplefile.yml
     loop: "{{ attributes_dict.Linux_Simple_File }}"
+- hosts: MacOS_Simple_File
+  tags: MacOS_Simple_File
+  tasks:
+  # Reuse the Linux implementation
+  - include_tasks: ../tasks/system/linux/filesystem/simplefile.yml
+    loop: "{{ attributes_dict.MacOS_Simple_File }}"
+
 - hosts: Win_Dirtree_Copy
   tags: Win_Dirtree_Copy
   tasks:
@@ -72,6 +101,12 @@
   tasks:
   - include_tasks: ../tasks/system/linux/filesystem/dirtree.yml
     loop: "{{ attributes_dict.Linux_Dirtree_Copy }}"
+- hosts: MacOS_Dirtree_Copy
+  tags: MacOS_Dirtree_Copy
+  tasks:
+  # Reuse the Linux implementation
+  - include_tasks: ../tasks/system/linux/filesystem/dirtree.yml
+    loop: "{{ attributes_dict.MacOS_Dirtree_Copy }}"
 - hosts: Win_Filesystem_ACL
   tags: Win_Filesystem_ACL
   tasks:
@@ -103,6 +138,12 @@
   tasks:
   - include_tasks: ../tasks/system/linux/scripts/shell_script.yml
     loop: "{{ attributes_dict.Linux_Shell_Script }}"
+- hosts: MacOS_Shell_Script
+  tags: MacOS_Shell_Script
+  tasks:
+  # Reuse the Linux implementation
+  - include_tasks: ../tasks/system/linux/scripts/shell_script.yml
+    loop: "{{ attributes_dict.MacOS_Shell_Script }}"
 - hosts: Win_PowerShell_Script
   tags: Win_PowerShell_Script
   tasks:

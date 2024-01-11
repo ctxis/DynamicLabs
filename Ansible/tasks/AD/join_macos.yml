@@ -1,0 +1,35 @@
+---
+# Join a MacOS host to and Active Directory domain
+#
+# Parameters (passed as name, value flags):
+# domain_name = fqdn domain name
+# domain_dns_server = DNS server for the domain, usually the domain controller
+#
+# Example:
+#            {
+#                name = "AD_Join_MacOS"
+#                value = [
+#                    {name = "domain_name", value = "dynamic.lab"},
+#                    {name = "domain_dns_server", value = "10.1.1.10"},
+#                ]
+#            },
+
+- set_fact:
+    AD_Join_MacOS: "{{ AD_Join_MacOS | default({}) | combine({item.name: item.value}) }}"
+  with_items:
+    - "{{ attributes_dict.AD_Join_MacOS }}"
+
+# Hardcoded to "Thunderbolt Ethernet Slot 0" as configured in AWS instances
+- name: Set DNS for "Thunderbolt Ethernet Slot 0"
+  shell: |
+    networksetup -setdnsservers 'Thunderbolt Ethernet Slot 0' {{ AD_Join_MacOS.domain_dns_server }}
+    networksetup -setsearchdomains 'Thunderbolt Ethernet Slot 0' {{ AD_Join_MacOS.domain_name }}
+
+- name: Join MacOS to the domain
+  shell: |
+    dsconfigad -show | grep {{ AD_Join_MacOS.domain_name }} || \
+    dsconfigad -add {{ AD_Join_MacOS.domain_name }} -computer {{ custom_hostname }} -username '{{ windows_system_user }}' -p '{{ windows_system_password }}' -force
+
+
+- name: Make domain admins local administrators
+  shell: "dsconfigad -groups 'domain admins@{{ AD_Join_MacOS.domain_name }}'"

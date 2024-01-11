@@ -30,11 +30,6 @@ variable "candidate_ip" {
     default = ["0.0.0.0/0"]
 }
 
-# This variable defines which sub-network should have 3389 open to candidate_ip CIDR range.
-variable "candidate_network" {
-    default = "3"
-}
-
 variable "managment_server_network_id" {
     default = "MAN"
 }

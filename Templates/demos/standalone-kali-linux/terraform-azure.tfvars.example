@@ -3,7 +3,6 @@ location = "uksouth"
 
 ############ / Attacker IP Range
 candidate_ip = ["XXX.XXX.XXX.XXX/XX"] # Replace with your IP.
-candidate_network = 1
 
 ############ / SSH Key
 public_key_file_candidate    = "candidate_key.pub"
@@ -33,7 +32,7 @@ assets_path = "Templates/demos/standalone-kali-linux/assets/"
 systems = [
     {
         module      = "offensivesecurity_kalilinux"
-        os_version  = "latest"
+        os_version  = "2023-4" # Check available versions at https://azuremarketplace.microsoft.com/en-gb/marketplace/apps/kali-linux.kali?tab=PlansAndPrice
         size        = "Standard_B1ms"
         network_id  = "1"
         hostname    = null

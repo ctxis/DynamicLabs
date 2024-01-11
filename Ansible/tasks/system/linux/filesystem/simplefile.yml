@@ -2,7 +2,7 @@
 #
 # path - path of directory to create
 # owner - the user owning the file (optional, default is root)
-# group - the group owning the file (optional, default is root)
+# group - the group owning the file (optional, default is 0 i.e. root/wheel depending on OS)
 # mode - the unix permissions on the file in chmod sytle
 # content - content of the file as a string (optional, default is the empty file)
 #
@@ -25,7 +25,7 @@
     dest: "{{ item.path }}"
     content: "{{ item.content | default() }}"
     owner: "{{ item.owner | default('root') }}" 
-    group: "{{ item.group | default('root') }}" 
+    group: "{{ item.group | default('0') }}" 
 
 - file:
     path: "{{ item.path }}"

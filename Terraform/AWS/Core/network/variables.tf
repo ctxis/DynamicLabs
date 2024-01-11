@@ -1,3 +1,5 @@
+variable "AWS_REGION" {}
+variable "AWS_AVAILABILITY_ZONE_ABC" {}
 variable "address_space_lab" {}
 variable "address_space_management" {}
 variable "networks" {

@@ -55,7 +55,7 @@
     shell: "{{ item.shell | default('/bin/bash')}}"
     groups: "{{ item.groups | default() }}"
     append: yes
-    password: "{{ user_password }}"
+    password: "{{ user_password | password_hash('sha512') }}"
     expires: -1
   when: (item.enabled | default('yes')) == "yes"
 

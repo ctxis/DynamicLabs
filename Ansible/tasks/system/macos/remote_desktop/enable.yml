@@ -1,0 +1,71 @@
+# Enables Apple Remote Desktop.
+# This is VNC listening on port 5900. This is available internally 
+# This feature enables all local users to login remotely.
+# If the system is domain joined, domain users are not allowed to connect by default
+# To allow domain users to login, add them to the the appropriate local group:
+#   ard_admin, ard_interact, ard_manage or ard_report
+#
+# To use it:
+#  * Tunnel port 5900 via ssh to the instance and redirect locally port 5900.
+#    For example connect to the Mac instance:
+#      ssh -L 5900:localhost:5900 -i /path/key-pair-name.pem ec2-user@instance-public-dns-name
+#  * Connect via VNC to the local port 5900
+#
+# Example:
+#            {
+#                name = "MacOS_Remote_Desktop",
+#                value = [ ]
+#            },
+#
+# To add the user.name and Domain Admins to login remotely you can use the following feature
+#            {
+#                name = "MacOS_Shell_Script"
+#                value = [
+#                    { 
+#                        inline_script = "dseditgroup -o edit -a \"user.name\" -t user \"ard_admin\""
+#                    },
+#                    { 
+#                        inline_script = "dseditgroup -o edit -a \"Domain Admins\" -t group \"ard_admin\""
+#                    },
+#              ]
+#           }
+
+- name: Activate and Enable Apple Remote Desktop
+  shell: |
+    # Enable Apple Remote Desktop
+    /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
+    -activate -configure -access -on \
+    -restart -agent -privs -all
+    # Allow AD users to authenticate via VNC
+    /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart \
+    -configure -clientopts -setdirlogins -dirlogins yes
+
+- name: Enable username and password login
+  shell: |
+    showfullname=`defaults read /Library/Preferences/com.apple.loginwindow SHOWFULLNAME`
+    test $showfullname -eq 0 && defaults write /Library/Preferences/com.apple.loginwindow SHOWFULLNAME 1
+    killall loginwindow
+
+# Create groups used to allow remote access via Apple Remote Desktop
+
+- name: Create ARD Admin local group
+  group:
+    name: ard_admin
+    state: present
+    
+- name: Create ARD Interact local group
+  group:
+    name: ard_interact
+    state: present
+
+- name: Create ARD Manage local group
+  group:
+    name: ard_manage
+    state: present
+
+- name: Create ARD Report local group
+  group:
+    name: ard_report
+    state: present
+
+
